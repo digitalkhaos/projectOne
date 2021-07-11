@@ -4,7 +4,16 @@ import socket
 from datetime import datetime, date
 import os
 import html.parser
+
+try:
+  import requests
+except ImportError:
+  print "Trying to Install required module: requests\n"
+  os.system('python -m pip install requests')
+# -- above lines try to install requests module if not present
+# -- if all went well, import required module again ( for global access)
 import requests
+
 from ipwhois import IPWhois
 
 VT_API_KEY = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13c'
