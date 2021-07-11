@@ -41,7 +41,10 @@ def checkIP(ip):
 
     if response.status_code == 200:
         try:
-            print(response.json())
+            #DEBUG
+            print(response.status_code)
+            #DEBUG
+            
             result = response.json()
 
             for each in result:
