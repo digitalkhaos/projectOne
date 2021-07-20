@@ -1,4 +1,15 @@
-#import needed header files
+function Projectone {
 
+		Param([parameter()][switch]$h)
+	$script = 'C:\Users\johnl\Documents\Repos\projectOne\projectOne.py'
 
-#create function to lookup IP address  
+	$params = @()
+
+	if($h){
+		$params += "-h"
+	}
+
+	python $script $params
+
+}
+
