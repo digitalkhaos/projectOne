@@ -66,12 +66,43 @@ Function Get-WhoIs {
 
 function Get-VirusTotalInfo {
     param (
-        [# Parameter help description
-        [Parameter(AttributeValues)]
-        [ParameterType]
-        $ParameterName]
+        [Parameter(Position = 0,
+                HelpMessage = "Enter an api key:",
+                ValueFromPipeline = $true,
+                ValueFromPipelineByPropertyName = $true)]       
+        [ValidateNotNullOrEmpty()]
+        [string]$vt_api_key,
+
+        [Parameter(Position = 1,
+                HelpMessage = "Enter an IP address:",
+                ValueFromPipeline = $true,
+                ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidatePattern("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")]
+        [ValidateScript( {
+                #verify each octet is valid to simplify the regex
+                $test = ($_.split(".")).where({[int]$_ -gt 254})
+                
+                if ($test) {
+                    Throw "$_ does not appear to be a valid IPv4 address"
+                    $false
+                }
+                else {
+                    $true
+                }
+            })]
+        [string]$ip_address
     )
     
+    $baseURL = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
+    $parameters = @{ 'apikey' = $vt_api_key, 'resource' = $ip_address }
+   
+    $response = Invoke-RestMethod -Method Get -Uri $baseURL -Headers @{ "Accept-Encoding" = "gzip" } -Body $parameters
+    
+    write-host "$response"
 }
+
+Write-Host "Starting $($MyInvocation.Mycommand)"
 Get-WhoIs
+Get-VirusTotalInfo
 
