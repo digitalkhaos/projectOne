@@ -58,22 +58,11 @@ Function Get-WhoIs {
             }
         } #If $r.net
     } #Process
-
-    End {
-        Write-Verbose "Ending $($MyInvocation.Mycommand)"
-    } #end
 }
 
 function Get-VirusTotalInfo {
     param (
         [Parameter(Position = 0,
-                HelpMessage = "Enter an api key:",
-                ValueFromPipeline = $true,
-                ValueFromPipelineByPropertyName = $true)]       
-        [ValidateNotNullOrEmpty()]
-        [string]$vt_api_key,
-
-        [Parameter(Position = 1,
                 HelpMessage = "Enter an IP address:",
                 ValueFromPipeline = $true,
                 ValueFromPipelineByPropertyName = $true)]
@@ -94,15 +83,42 @@ function Get-VirusTotalInfo {
         [string]$ip_address
     )
     
-    $baseURL = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
-    $parameters = @{ 'apikey' = $vt_api_key, 'resource' = $ip_address }
-   
-    $response = Invoke-RestMethod -Method Get -Uri $baseURL -Headers @{ "Accept-Encoding" = "gzip" } -Body $parameters
+    $url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
+    $Body = @{'ip' = $ip_address; 'apikey' = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13c'}
+
+    # Start building parameters for REST Method invokation.
+    $Params =  @{}
+    $Params.add('Body', $Body)
+    $Params.add('Method', 'Get')
+    $Params.add('Uri',$url)
+    $Params.Add('ErrorVariable', 'RESTError')
+
+    $IPReport = Invoke-RestMethod @Params
+
+    if ($RESTError)
+        {
+            if ($RESTError.Message.Contains('403'))
+            {
+                throw 'API key is not valid.'
+            }
+            elseif ($RESTError.Message -like '*204*')
+            {
+                throw 'API key rate has been reached.'
+            }
+            else
+            {
+                throw $RESTError
+            }
+        }
+
+    #$IPReport.pstypenames.insert(0,'VirusTotal.IP.Report')
+    $tot = $IPReport.detected_urls.total
     
-    write-host "$response"
+    Write-Host "Positives = $pos"
+    Write-Host "Total = $tot"
 }
 
-Write-Host "Starting $($MyInvocation.Mycommand)"
-Get-WhoIs
-Get-VirusTotalInfo
+$ip = Read-Host -Prompt "Enter an IP address to lookup"
 
+Get-WhoIs($ip)
+Get-VirusTotalInfo($ip)

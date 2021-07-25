@@ -1,4 +1,4 @@
-#always remember, jack sucks
+
 import base64
 import socket
 from datetime import datetime, date
@@ -7,19 +7,17 @@ import html.parser
 
 try:
     import requests
-
-    except ImportError:
-        print "Trying to Install required module: requests\n"
-        os.system('python -m pip install requests')
+except ImportError:
+    print "Trying to Install required module: requests\n"
+    os.system('python -m pip install requests')
 import requests
+
 from ipwhois import IPWhois
 
-#jack sucks
 VT_API_KEY = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13c'
 AB_API_KEY = '7664fdaa5ee24939ea1f2fa2c39ca21f9d0530e58b030d8bf92d714ac89eba6104f0b1df95d495a9'
 
 def checkIP(ip):
-    #god damn jack sucks
     w = IPWhois(ip)
     w = w.lookup_whois()
     addr = str(w['nets'][0]['address'])
@@ -42,11 +40,11 @@ def checkIP(ip):
 
     print("\n VirusTotal:")
 
-    vt_url = 'https://www.virustotal.com/vtapi/v2/url/report'
+    url = 'https://www.virustotal.com/vtapi/v2/url/report'
     params = {'apikey': VT_API_KEY, 'resource': IP}
-    response = requests.get(vt_url, params=params)
-    positive = 0 # Total positives found in VT
-    total = 0 # Total number of scans
+    response = requests.get(url, params=params)
+    pos = 0 # Total positives found in VT
+    tot = 0 # Total number of scans
 
     if response.status_code == 200:
         try:
@@ -57,13 +55,13 @@ def checkIP(ip):
             result = response.json()
 
             for each in result:
-                total = result['total']
+                tot = result['total']
 
                 if result['positives'] != 0:
-                    positive = positive + 1
+                    pos = pos + 1
 
-            print("   No of Databases Checked: " + str(total))
-            print("   No of Reportings: " + str(positive))
+            print("   No of Databases Checked: " + str(tot))
+            print("   No of Reportings: " + str(pos))
 
         except:
             print('error')
