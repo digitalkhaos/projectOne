@@ -91,31 +91,11 @@ function Get-VirusTotalInfo {
     $Params.add('Body', $Body)
     $Params.add('Method', 'Get')
     $Params.add('Uri',$url)
-    $Params.Add('ErrorVariable', 'RESTError')
 
     $IPReport = Invoke-RestMethod @Params
+    $IPReport = $IPReport | ConvertFrom-Json
 
-    if ($RESTError)
-        {
-            if ($RESTError.Message.Contains('403'))
-            {
-                throw 'API key is not valid.'
-            }
-            elseif ($RESTError.Message -like '*204*')
-            {
-                throw 'API key rate has been reached.'
-            }
-            else
-            {
-                throw $RESTError
-            }
-        }
-
-    #$IPReport.pstypenames.insert(0,'VirusTotal.IP.Report')
-    $tot = $IPReport.detected_urls.total
-    
-    Write-Host "Positives = $pos"
-    Write-Host "Total = $tot"
+    $IPReport | get-member
 }
 
 $ip = Read-Host -Prompt "Enter an IP address to lookup"
