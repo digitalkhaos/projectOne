@@ -93,9 +93,18 @@ function Get-VirusTotalInfo {
     $Params.add('Uri',$url)
 
     $IPReport = Invoke-RestMethod @Params
-    $IPReport = $IPReport | ConvertFrom-Json
+    $IPReport = $IPReport.Content | ConvertTo-Json
+    
 
-    $IPReport | get-member
+    $IPReport | ForEach-Object{
+        $tot = $IPReport['total']
+
+        if($IPReport['Positives'] -eq 0){
+            $pos = $pos + 1
+        }
+    }
+    Write-Host "Total = $tot"
+    Write-Host "Positive = $pos"
 }
 
 $ip = Read-Host -Prompt "Enter an IP address to lookup"
