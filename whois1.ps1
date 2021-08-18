@@ -26,10 +26,11 @@ Function Get-WhoIs {
     Begin {
         Write-Verbose "Starting $($MyInvocation.Mycommand)"
         $baseURL = 'http://whois.arin.net/rest'
-        #default is XML anyway
+
+        #default is XML 
         $header = @{"Accept" = "application/xml"}
 
-    } #begin
+    }
 
     Process {
         Write-Verbose "Getting WhoIs information for $IPAddress"
@@ -56,8 +57,8 @@ Function Get-WhoIs {
                 NetBlocks              = $r.net.netBlocks.netBlock | foreach-object {"$($_.startaddress)/$($_.cidrLength)"}
                 Updated                = $r.net.updateDate -as [datetime]
             }
-        } #If $r.net
-    } #Process
+        }
+    } 
 }
 
 function Get-VirusTotalInfo {
@@ -93,18 +94,9 @@ function Get-VirusTotalInfo {
     $Params.add('Uri',$url)
 
     $IPReport = Invoke-RestMethod @Params
-    $IPReport = $IPReport.Content | ConvertTo-Json
-    
+    $IPReportObj = $IPReport | ConvertTo-Json
 
-    $IPReport | ForEach-Object{
-        $tot = $IPReport['total']
-
-        if($IPReport['Positives'] -eq 0){
-            $pos = $pos + 1
-        }
-    }
-    Write-Host "Total = $tot"
-    Write-Host "Positive = $pos"
+    $IPReportObj
 }
 
 $ip = Read-Host -Prompt "Enter an IP address to lookup"
