@@ -8,7 +8,7 @@ import html.parser
 try:
     import requests
 except ImportError:
-    print "Trying to Install required module: requests\n"
+    print("Trying to Install required module: requests\n")
     os.system('python -m pip install requests')
 import requests
 
@@ -46,12 +46,8 @@ def checkIP(ip):
     pos = 0 # Total positives found in VT
     tot = 0 # Total number of scans
 
-    if response.status_code == 200:
+    if (response.status_code == 200 or response.status_code == 0):
         try:
-            #DEBUG
-            print(response.status_code)
-            #DEBUG
-            
             result = response.json()
 
             for each in result:
