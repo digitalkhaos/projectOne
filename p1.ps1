@@ -4,7 +4,10 @@ by John
 2021
 
 TODO: turn into a windowed GUI
-TODO: add abusedIP report
+TODO: add IPQualityScore report
+TODO: add TOR IP report
+TODO: Add abused IP report
+
 #>
 
 Function Get-WhoIsInfo {
@@ -49,6 +52,7 @@ Function Get-WhoIsInfo {
                 IP                     = $ipaddress
                 Name                   = $r.net.name
                 RegisteredOrganization = $r.net.orgRef.name
+                Description            = $r.net.description
                 #City                   = (Invoke-RestMethod $r.net.orgRef.'#text').org.city
                 StartAddress           = $r.net.startAddress
                 EndAddress             = $r.net.endAddress
@@ -118,7 +122,36 @@ function Get-VirusTotalInfo {
     Write-Host "Total number of submissions: $file_total"
 }
 
+function Get-TorIPInfo {
+    param (
+        [Parameter(
+            Position = 0,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
+
+        #friggin regex
+        [ValidatePattern("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")]
+        [ValidateScript( {
+            $test_ip = ($_.split(".")).where({[int]$_ -gt 254})
+                
+            if ($test_ip) {
+                 Throw "$_ is not valid"
+                 $false
+            }
+            else {
+                $true
+            }
+        })]
+        [string]$ip_address
+    )
+
+    $url = 'https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=' + $ip_address
+
+}
+
 $ip = Read-Host -Prompt "Enter an IP address to lookup"
 
 Get-WhoIsInfo($ip)
 Get-VirusTotalInfo($ip)
+Get-TorIPInfo($ip)
