@@ -4,9 +4,10 @@ by John
 2021
 
 TODO: turn into a windowed GUI
+TODO: add abusedIP report
 #>
 
-Function Get-WhoIs {
+Function Get-WhoIsInfo {
     [cmdletbinding()]
     [OutputType("WhoIsResult")]
     Param (
@@ -32,29 +33,12 @@ Function Get-WhoIs {
         [string]$IPAddress
     )
 
-        $whois_url = 'http://whois.arin.net/rest'
+    $whoisinfo = Get-WhoIs($IPAddress)
 
-        #default is XML 
-        $header = @{"Accept" = "application/xml"}
+    Write-Host $whoisinfo.Name
+    Write-Host $whoisinfo.Country
+    Write-Host $whoisinfo.Organization
 
-        Write-Host "- WHOIS Record -"
-        $url = "$whois_url/ip/$ipaddress"
-        $r = Invoke-Restmethod $url -Headers $header -ErrorAction stop
-        
-        #standard return info is ugly, ill use this instead
-        if ($r.net) {
-            [pscustomobject]@{
-                PSTypeName             = "WhoIsResult"
-                IP                     = $ipaddress
-                Name                   = $r.net.name
-                RegisteredOrganization = $r.net.orgRef.name
-                City                   = (Invoke-RestMethod $r.net.orgRef.'#text').org.city
-                StartAddress           = $r.net.startAddress
-                EndAddress             = $r.net.endAddress
-                NetBlocks              = $r.net.netBlocks.netBlock | foreach-object {"$($_.startaddress)/$($_.cidrLength)"}
-                Updated                = $r.net.updateDate -as [datetime]
-            }
-     }
 }
 
 function Get-VirusTotalInfo {
@@ -119,5 +103,5 @@ function Get-VirusTotalInfo {
 
 $ip = Read-Host -Prompt "Enter an IP address to lookup"
 
-Get-WhoIs($ip)
+Get-WhoIsInfo($ip)
 Get-VirusTotalInfo($ip)
