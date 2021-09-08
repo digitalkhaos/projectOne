@@ -7,7 +7,7 @@ TODO: turn into a windowed GUI
 TODO: add abusedIP report
 TODO: add IPQualityScore report
 TODO: add TOR IP report
-TODO: Add abused IP report
+TODO:(possibly) X-force report
 
 #>
 
@@ -39,37 +39,37 @@ Function Get-WhoIsInfo {
 
     $whoisinfo = Get-WhoIs($IPAddress)
 
-    Write-Host $whoisinfo.Name
-    Write-Host $whoisinfo.Country
-    Write-Host $whoisinfo.Organization
+    Write-Host "$whoisinfo.Name"
+    Write-Host "$whoisinfo.Country"
+    Write-Host "$whoisinfo.Organization"
 
-        $whois_url = 'http://whois.arin.net/rest'
+    $whois_url = 'http://whois.arin.net/rest'
 
-        #default is XML 
-        $header = @{"Accept" = "application/xml"}
+    #default is XML 
+    $header = @{"Accept" = "application/xml"}
 
-        Write-Host "- WHOIS Record -"
-        $url = "$whois_url/ip/$ipaddress"
-        $r = Invoke-Restmethod $url -Headers $header -ErrorAction stop
-        
-        #standard return info is ugly, ill use this instead
-        if ($r.net) {
-            [pscustomobject]@{
-                PSTypeName             = "WhoIsResult"
-                IP                     = $ipaddress
-                Name                   = $r.net.name
-                RegisteredOrganization = $r.net.orgRef.name
-                Description            = $r.net.description
-                #City                   = (Invoke-RestMethod $r.net.orgRef.'#text').org.city
-                StartAddress           = $r.net.startAddress
-                EndAddress             = $r.net.endAddress
-                NetBlocks              = $r.net.netBlocks.netBlock | foreach-object {"$($_.startaddress)/$($_.cidrLength)"}
-                Updated                = $r.net.updateDate -as [datetime]
-            }
+    Write-Host "- WHOIS Record -"
+    $url = "$whois_url/ip/$ipaddress"
+    $r = Invoke-Restmethod $url -Headers $header -ErrorAction stop
+    
+    #standard return info is ugly, ill use this instead
+    if ($r.net) {
+        [pscustomobject]@{
+            PSTypeName             = "WhoIsResult"
+            IP                     = $ipaddress
+            Name                   = $r.net.name
+            RegisteredOrganization = $r.net.orgRef.name
+            Description            = $r.net.description
+            #City                   = (Invoke-RestMethod $r.net.orgRef.'#text').org.city
+            StartAddress           = $r.net.startAddress
+            EndAddress             = $r.net.endAddress
+            NetBlocks              = $r.net.netBlocks.netBlock | foreach-object {"$($_.startaddress)/$($_.cidrLength)"}
+            Updated                = $r.net.updateDate -as [datetime]
+        }
      }
 }
 
-function Get-VirusTotalInfo {
+Function Get-VirusTotalInfo {
     param (
         [Parameter(
             Position = 0,
@@ -129,8 +129,6 @@ function Get-VirusTotalInfo {
     Write-Host "Total number of submissions: $file_total"
 }
 
-<<<<<<< HEAD
-=======
 function Get-TorIPInfo {
     param (
         [Parameter(
@@ -155,16 +153,21 @@ function Get-TorIPInfo {
         [string]$ip_address
     )
 
-    $url = 'https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=' + $ip_address
+    $tor_url = 'https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1'
 
+    #check ip_address against tor's list
+    foreach($line in (Invoke-RestMethod $tor_url).split("\n")) {
+        if ($line -eq $ip_address) {
+            Write-Host "IP Address is in Tor's Exit List"
+        }
+        else {
+            Write-Host "IP Address is NOT in Tor's Exit List"
+        }
+    }
 }
 
->>>>>>> 567fca5a7e562982ec1fda2192800d0751339e93
 $ip = Read-Host -Prompt "Enter an IP address to lookup"
 
 Get-WhoIsInfo($ip)
 Get-VirusTotalInfo($ip)
-<<<<<<< HEAD
-=======
 Get-TorIPInfo($ip)
->>>>>>> 567fca5a7e562982ec1fda2192800d0751339e93
