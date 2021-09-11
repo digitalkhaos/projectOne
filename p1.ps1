@@ -37,12 +37,6 @@ Function Get-WhoIsInfo {
         [string]$IPAddress
     )
 
-    $whoisinfo = Get-WhoIs($IPAddress)
-
-    Write-Host "$whoisinfo.Name"
-    Write-Host "$whoisinfo.Country"
-    Write-Host "$whoisinfo.Organization"
-
     $whois_url = 'http://whois.arin.net/rest'
 
     #default is XML 
@@ -51,6 +45,7 @@ Function Get-WhoIsInfo {
     Write-Host "- WHOIS Record -"
     $url = "$whois_url/ip/$ipaddress"
     $r = Invoke-Restmethod $url -Headers $header -ErrorAction stop
+    write-host $r.statusCode
     
     #standard return info is ugly, ill use this instead
     if ($r.net) {
@@ -61,6 +56,7 @@ Function Get-WhoIsInfo {
             RegisteredOrganization = $r.net.orgRef.name
             Description            = $r.net.description
             #City                   = (Invoke-RestMethod $r.net.orgRef.'#text').org.city
+            Country                = $r.net.countryRef.name
             StartAddress           = $r.net.startAddress
             EndAddress             = $r.net.endAddress
             NetBlocks              = $r.net.netBlocks.netBlock | foreach-object {"$($_.startaddress)/$($_.cidrLength)"}
