@@ -6,7 +6,6 @@ by John
 TODO: turn into a windowed GUI
 TODO: add abusedIP report
 TODO: add IPQualityScore report
-TODO: add TOR IP report
 TODO:(possibly) X-force report
 
 #>
@@ -45,22 +44,22 @@ Function Get-WhoIsInfo {
     Write-Host "- WHOIS Record -"
     $url = "$whois_url/ip/$ipaddress"
     $r = Invoke-Restmethod $url -Headers $header -ErrorAction stop
-    write-host $r.statusCode
     
-    #standard return info is ugly, ill use this instead
+    #standard return info is ugly, will use this instead
     if ($r.net) {
         [pscustomobject]@{
             PSTypeName             = "WhoIsResult"
             IP                     = $ipaddress
-            Name                   = $r.net.name
+            Name                   = $r.net.customerRef.name
             RegisteredOrganization = $r.net.orgRef.name
-            Description            = $r.net.description
+            Description            = $r.net.desc
             #City                   = (Invoke-RestMethod $r.net.orgRef.'#text').org.city
             Country                = $r.net.countryRef.name
             StartAddress           = $r.net.startAddress
             EndAddress             = $r.net.endAddress
             NetBlocks              = $r.net.netBlocks.netBlock | foreach-object {"$($_.startaddress)/$($_.cidrLength)"}
             Updated                = $r.net.updateDate -as [datetime]
+            Handle                 = $r.net.parentNetRef.handle
         }
      }
 }
@@ -101,6 +100,8 @@ Function Get-VirusTotalInfo {
     #get the report
     $IPReport = Invoke-RestMethod @Params 
 
+    #positive and total counts need to be looked at more
+    
     $url_pos = 0
     $url_total = 0
 
@@ -112,6 +113,8 @@ Function Get-VirusTotalInfo {
     Write-Host "- VirusTotal Analysis -"
     Write-Host "Associated url's with detected positives: $url_pos"
     Write-Host "Total number of submissions: $url_total"
+    Write-Host
+    Write-Host 
 
     $file_pos = 0
     $file_total = 0
@@ -123,6 +126,8 @@ Function Get-VirusTotalInfo {
 
     Write-Host "Associated files with detected positives: $file_pos"
     Write-Host "Total number of submissions: $file_total"
+    Write-Host
+    Write-Host
 }
 
 function Get-TorIPInfo {
@@ -150,15 +155,22 @@ function Get-TorIPInfo {
     )
 
     $tor_url = 'https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1'
+    $flag = 0
+
+    Write-Host "- TOR Node Status -"
 
     #check ip_address against tor's list
-    foreach($line in (Invoke-RestMethod $tor_url).split("\n")) {
-        if ($line -eq $ip_address) {
-            Write-Host "IP Address is in Tor's Exit List"
+    foreach($line in (Invoke-RestMethod $tor_url).split("`n")) {    
+        if($line -eq $ip_address) {
+            Write-Host "*******************ALERT ALERT******************"
+            Write-Host "ALERT: $ip_address IS A TOR EXIT NODE" 
+            $flag = 1
         }
-        else {
-            Write-Host "IP Address is NOT in Tor's Exit List"
-        }
+    }
+    # I have no idea why else{} won't work here but whatever, something to do with Jack sucking
+    if($flag -eq 0) {
+        write-host "No TOR exit node detected"
+        $flag = 0
     }
 }
 
