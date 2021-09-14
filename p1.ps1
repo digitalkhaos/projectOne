@@ -1,14 +1,15 @@
 <#
 project one (p1.ps1) - SOC Analyst IP info tool
-by John
+by bulletproof
 2021
 
 TODO: turn into a windowed GUI
 TODO: add abusedIP report
-TODO: add IPQualityScore report
 TODO:(possibly) X-force report
-
 #>
+
+$VT_API_KEY = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13c'
+$AB_API_KEY = '7664fdaa5ee24939ea1f2fa2c39ca21f9d0530e58b030d8bf92d714ac89eba6104f0b1df95d495a9'
 
 Function Get-WhoIsInfo {
     [cmdletbinding()]
@@ -89,7 +90,7 @@ Function Get-VirusTotalInfo {
     )
     
     $url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
-    $Body = @{'ip' = $ip_address; 'apikey' = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13c'}
+    $Body = @{'ip' = $ip_address; 'apikey' = $VT_API_KEY}
 
     # parameters for REST Method
     $Params =  @{}
@@ -101,7 +102,7 @@ Function Get-VirusTotalInfo {
     $IPReport = Invoke-RestMethod @Params 
 
     #positive and total counts need to be looked at more
-    
+
     $url_pos = 0
     $url_total = 0
 
@@ -164,14 +165,63 @@ function Get-TorIPInfo {
         if($line -eq $ip_address) {
             Write-Host "*******************ALERT ALERT******************"
             Write-Host "ALERT: $ip_address IS A TOR EXIT NODE" 
+            write-host "*******************ALERT ALERT******************`n"
             $flag = 1
         }
     }
     # I have no idea why else{} won't work here but whatever, something to do with Jack sucking
     if($flag -eq 0) {
-        write-host "No TOR exit node detected"
+        write-host "No TOR exit node detected`n"
         $flag = 0
     }
+}
+
+Function Get-AbusedIPInfo {
+    param (
+        [Parameter(
+            Position = 0,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
+
+        #friggin regex
+        [ValidatePattern("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")]
+        [ValidateScript( {
+            $test_ip = ($_.split(".")).where({[int]$_ -gt 254})
+                
+            if ($test_ip) {
+                 Throw "$_ is not valid"
+                 $false
+            }
+            else {
+                $true
+            }
+        })]
+        [string]$ip_address
+    )
+
+    $url = 'https://api.abuseipdb.com/api/v2/check'
+    $days = 180
+
+    $query = @{
+        'ipAddress' = $ip_address
+        'maxAgeInDays' = $days
+    }
+
+    $header = @{
+        'Accept' = 'application/json'
+        'Key' = $AB_API_KEY
+    }
+
+    write-host "- AbuseIPDB Analysis -"
+    
+
+    $response = Invoke-RestMethod -Method Get -Uri $url -Body $query -Headers $header
+    $test_response = Invoke-RestMethod -Method Get -Uri 'https://api.abuseipdb.com/api/v2/check' -Body $query -Headers $header
+
+    write-host $test_response
+
+
 }
 
 $ip = Read-Host -Prompt "Enter an IP address to lookup"
@@ -179,3 +229,4 @@ $ip = Read-Host -Prompt "Enter an IP address to lookup"
 Get-WhoIsInfo($ip)
 Get-VirusTotalInfo($ip)
 Get-TorIPInfo($ip)
+Get-AbusedIPInfo($ip)
