@@ -8,8 +8,9 @@ TODO: add abusedIP report
 TODO:(possibly) X-force report
 #>
 
-$VT_API_KEY = ''
-$AB_API_KEY = ''
+$VT_API_KEY = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13c'
+$AB_API_KEY = '7664fdaa5ee24939ea1f2fa2c39ca21f9d0530e58b030d8bf92d714ac89eba6104f0b1df95d495a9'
+
 
 Function Get-WhoIsInfo {
     [cmdletbinding()]
