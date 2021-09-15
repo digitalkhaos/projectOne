@@ -1,11 +1,11 @@
 <#
-project one (p1.ps1) - SOC Analyst IP info tool
-by bulletproof
-2021
+    project one (p1.ps1) - SOC Analyst IP info tool
+    by bulletproof
+    2021
 
-TODO: turn into a windowed GUI
-TODO: add abusedIP report
-TODO:(possibly) X-force report
+    TODO: turn into a windowed GUI
+    TODO: add abusedIP report
+    TODO:(possibly) X-force report
 #>
 
 $VT_API_KEY = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13c'
@@ -47,18 +47,21 @@ Function Get-WhoIsInfo {
     $url = "$whois_url/ip/$ipaddress"
     $r = Invoke-Restmethod $url -Headers $header -ErrorAction stop
 
-    $orgInfo = "http://whois.arin.net/rest/customer/" + $r.net.customerRef.handle
-    
-    write-host $orgInfo
+    $newUrl = "http://whois.arin.net/rest/net/"
+    $handle = $r.net.customerRef.handle
+    write-host "Handle: $handle"
+    Write-Host $newUrl + $handle
+    #$testResponse = Invoke-Restmethod $orgInfo -Headers $header -ErrorAction stop
+
     #standard return info is ugly, will use this instead
     if ($r.net) {
         [pscustomobject]@{
             PSTypeName             = "WhoIsResult"
             IP                     = $ipaddress
-            Name                   = $r.net.customerRef.name
-            RegisteredOrganization = $orgInfo.name
+            Name                   = $testResponse.parentNetRef.name
+            RegisteredOrganization = $custInfo.orgRef.name
             Description            = $r.net.desc
-            City                   = $orgInfo.orgRef.city
+            City                   = $custInfo.orgRef.city
             #City                   = (Invoke-RestMethod $r.net.orgRef.'#text').org.city
             Country                = $r.net.countryRef.name
             StartAddress           = $r.net.startAddress
