@@ -46,24 +46,21 @@ Function Get-WhoIsInfo {
     Write-Host "- WHOIS Record -"
     $url = "$whois_url/ip/$ipaddress"
     $r = Invoke-Restmethod $url -Headers $header -ErrorAction stop
-
-    $newUrl = "http://whois.arin.net/rest/net/"
-    $handle = $r.net.customerRef.handle
-    write-host "Handle: $handle"
-    Write-Host $newUrl + $handle
-    #$testResponse = Invoke-Restmethod $orgInfo -Headers $header -ErrorAction stop
+    $newUrl = "http://whois.arin.net/rest/org/"
+    $handle = $r.net.orgRef.handle
+    $info_url = $newUrl + $handle 
+    $orgUrl = Invoke-Restmethod $info_url -Headers $header -ErrorAction stop
 
     #standard return info is ugly, will use this instead
     if ($r.net) {
         [pscustomobject]@{
             PSTypeName             = "WhoIsResult"
             IP                     = $ipaddress
-            Name                   = $testResponse.parentNetRef.name
-            RegisteredOrganization = $custInfo.orgRef.name
+            Name                   = $r.net.parentNetRef.name
+            RegisteredOrganization = $orgUrl.org.name
             Description            = $r.net.desc
-            City                   = $custInfo.orgRef.city
-            #City                   = (Invoke-RestMethod $r.net.orgRef.'#text').org.city
-            Country                = $r.net.countryRef.name
+            City                   = $orgUrl.org.city
+            Country                = $orgUrl.org.'iso3166-1'.name
             StartAddress           = $r.net.startAddress
             EndAddress             = $r.net.endAddress
             NetBlocks              = $r.net.netBlocks.netBlock | foreach-object {"$($_.startaddress)/$($_.cidrLength)"}
@@ -120,7 +117,7 @@ Function Get-VirusTotalInfo {
     
     Write-Host "- VirusTotal Analysis -"
     Write-Host "Associated url's with detected positives: $url_pos"
-    Write-Host "Total number of submissions: $url_total`n`n" 
+    Write-Host "Total number of submissions: $url_total`n" 
 
     $file_pos = 0
     $file_total = 0
@@ -131,7 +128,7 @@ Function Get-VirusTotalInfo {
     }
 
     Write-Host "Associated files with detected positives: $file_pos"
-    Write-Host "Total number of submissions: $file_total`n`n"
+    Write-Host "Total number of submissions: $file_total`n"
 }
 
 function Get-TorIPInfo {
@@ -216,14 +213,22 @@ Function Get-AbusedIPInfo {
     }
 
     write-host "- AbuseIPDB Analysis -"
-    write-host "not yet implemented"
 
-    <#
-    $response = Invoke-RestMethod -Method Get -Uri $url -Body $query -Headers $header
+    
+    #$response = Invoke-RestMethod -Method Get -Uri $url -Body $query -Headers $header
     $test_response = Invoke-RestMethod -Method Get -Uri 'https://api.abuseipdb.com/api/v2/check' -Body $query -Headers $header
 
-    write-host $test_response
-    #>
+    write-host "IP Address:        " $test_response.data.ipAddress
+    write-host "Domain Name:       " $test_response.data.domain
+    write-host "Total Reports:     " $test_response.data.totalReports
+    write-host "Abuse Score:       " $test_response.data.abuseconfidencescore "%" 
+    write-host "Last Report:       " $test_response.data.lastReportedAt 
+
+    if($test_response.data.abuseconfidencescore -gt 5) {
+        write-host "*******************ALERT ALERT******************"
+        write-host "ALERT: $ip_address has ISSUES"
+        write-host "*******************ALERT ALERT******************`n"
+    }
 }
 
 $ip = Read-Host -Prompt "Enter an IP address to lookup"
