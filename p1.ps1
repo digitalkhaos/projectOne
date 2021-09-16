@@ -15,6 +15,8 @@ Add-Type -AssemblyName System.Drawing
 
 $mainForm = New-Object System.Windows.Forms.Form
 $mainForm.Size = New-Object System.Drawing.Size(800, 600)
+$mainForm.FormBorderStyle = 'Fixed3D'
+$mainform.MaximizeBox = $false
 $mainForm.Text = 'Bulletproof Security Analyst Tool'
 $mainForm.StartPosition = 'CenterScreen'
 $mainForm.Font = New-Object System.Drawing.Font("opensans", 10, [System.Drawing.FontStyle]::bold)
@@ -66,11 +68,11 @@ $abusedipTxtBox.ReadOnly = $true
 $mainForm.Controls.Add($abusedipTxtBox)
 
 $ipTxtBox = New-Object System.Windows.Forms.TextBox
-$ipTxtBox.Location = New-Object System.Drawing.Point(60, 30)
+$ipTxtBox.Location = New-Object System.Drawing.Point(90, 30)
 $ipTxtBox.Size = New-Object System.Drawing.Size(420, 10)
 $ipTxtBox.Multiline = $false
 $ipTxtBox.Height = 185
-$ipTxtBox.Width = 200
+$ipTxtBox.Width = 165
 $ipTxtBox.ReadOnly = $false
 $mainForm.Controls.Add($ipTxtBox)
 
@@ -82,6 +84,15 @@ $virustotalTxtBox.Height = 185
 $virustotalTxtBox.Width = 360
 $virustotalTxtBox.ReadOnly = $true
 $mainForm.Controls.Add($virustotalTxtBox)
+
+$torTxtBox = New-Object System.Windows.Forms.TextBox
+$torTxtBox.Location = New-Object System.Drawing.Point(10, 350)
+$torTxtBox.Size = New-Object System.Drawing.Size(10, 200)
+$torTxtBox.Multiline = $true
+$torTxtBox.Height = 185
+$torTxtBox.Width = 360
+$torTxtBox.ReadOnly = $true
+$mainForm.Controls.Add($torTxtBox)
 
 Function Get-WhoIsInfo {
     [cmdletbinding()]
@@ -114,7 +125,7 @@ Function Get-WhoIsInfo {
     #default is XML 
     $header = @{"Accept" = "application/xml"}
 
-    $whoisTxtBox.Text = "- WHOIS Record -"
+    $whoisTxtBox.Text = "- WHOIS Record -`n"
 
     $url = "$whois_url/ip/$ipaddress"
     $r = Invoke-Restmethod $url -Headers $header -ErrorAction stop
@@ -232,20 +243,20 @@ function Get-TorIPInfo {
     $tor_url = 'https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1'
     $flag = 0
 
-    Write-Host "- TOR Node Status -"
+    $torTxtBox.Text =  "- TOR Node Status -`n"
 
     #check ip_address against tor's list
     foreach($line in (Invoke-RestMethod $tor_url).split("`n")) {    
         if($line -eq $ip_address) {
-            Write-Host "*******************ALERT ALERT******************"
-            Write-Host "ALERT: $ip_address IS A TOR EXIT NODE" 
-            write-host "*******************ALERT ALERT******************`n"
+            $torTxtBox.AppendText("*******************ALERT ALERT******************`n")
+            $torTxtBox.AppendText("ALERT: $ip_address IS A TOR EXIT NODE`n") 
+            $torTxtBox.AppendText("*******************ALERT ALERT******************`n")
             $flag = 1
         }
     }
     # I have no idea why else{} won't work here but whatever, something to do with Jack sucking
     if($flag -eq 0) {
-        write-host "No TOR exit node detected`n"
+        $torTxtBox.AppendText("`nNo TOR exit node detected`n")
         $flag = 0
     }
 }
@@ -311,7 +322,6 @@ $okBtn.Add_Click({
     Get-TorIPInfo($ipTxtBox.Text)
     Get-AbusedIPInfo($ipTxtBox.Text)
 })
-
 
 # bring up mainForm
 $mainForm.Add_Shown({$mainForm.activate()})
