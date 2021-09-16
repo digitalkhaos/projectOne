@@ -10,6 +10,79 @@
 $VT_API_KEY = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13c'
 $AB_API_KEY = '7664fdaa5ee24939ea1f2fa2c39ca21f9d0530e58b030d8bf92d714ac89eba6104f0b1df95d495a9'
 
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+$mainForm = New-Object System.Windows.Forms.Form
+$mainForm.Size = New-Object System.Drawing.Size(800, 600)
+$mainForm.Text = 'Bulletproof Security Analyst Tool'
+$mainForm.StartPosition = 'CenterScreen'
+$mainForm.Font = New-Object System.Drawing.Font("opensans", 10, [System.Drawing.FontStyle]::bold)
+
+$okBtn = New-Object System.Windows.Forms.Button
+$okBtn.Location = New-Object System.Drawing.Point(275, 30)
+$okBtn.Size = New-Object System.Drawing.Size(75, 23)
+$okBtn.Height = 25
+$okBtn.Width = 80
+$okBtn.Text = 'ok'
+$okBtn.Font = New-Object System.Drawing.Font("opensans", 10, [System.Drawing.FontStyle]::bold)
+$mainForm.Controls.Add($okBtn)
+
+$exitBtn = New-Object System.Windows.Forms.Button
+$exitBtn.Location = New-Object System.Drawing.Point(550, 470)
+$exitBtn.Size = New-Object System.Drawing.Size(75, 23)
+$exitBtn.Height = 50
+$exitBtn.Width = 120
+$exitBtn.Text = 'Exit'
+$exitBtn.Font = New-Object System.Drawing.Font("opensans", 10, [System.Drawing.FontStyle]::bold)
+$exitBtn.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+$mainForm.CancelButton = $exitBtn
+$mainForm.Controls.Add($exitBtn)
+
+$lbl = New-Object System.Windows.Forms.label
+$lbl.Location = New-Object System.Drawing.Point(10, 30)
+$lbl.Size = New-Object System.Drawing.Size(80, 30)
+$lbl.Text = 'IP Address:'
+$mainForm.Controls.Add($lbl)
+
+# tenantListBox with account / tenant pairs
+$whoisTxtBox = New-Object System.Windows.Forms.TextBox
+$whoisTxtBox.Location = New-Object System.Drawing.Point(10, 60)
+$whoisTxtBox.Size = New-Object System.Drawing.Size(300, 10)
+$whoisTxtBox.Height = 285
+$whoisTxtBox.Width = 360
+$whoisTxtBox.Multiline = $true
+$whoisTxtBox.ReadOnly = $true
+$whoisTxtBox.Font = New-Object System.Drawing.Font("opensans", 10, [System.Drawing.FontStyle]::Regular)
+$mainForm.Controls.Add($whoisTxtBox)
+
+$abusedipTxtBox = New-Object System.Windows.Forms.TextBox
+$abusedipTxtBox.Location = New-Object System.Drawing.Point(400, 60)
+$abusedipTxtBox.Size = New-Object System.Drawing.Size(420, 10)
+$abusedipTxtBox.Multiline = $true
+$abusedipTxtBox.Height = 185
+$abusedipTxtBox.Width = 360
+$abusedipTxtBox.ReadOnly = $true
+$mainForm.Controls.Add($abusedipTxtBox)
+
+$ipTxtBox = New-Object System.Windows.Forms.TextBox
+$ipTxtBox.Location = New-Object System.Drawing.Point(60, 30)
+$ipTxtBox.Size = New-Object System.Drawing.Size(420, 10)
+$ipTxtBox.Multiline = $false
+$ipTxtBox.Height = 185
+$ipTxtBox.Width = 200
+$ipTxtBox.ReadOnly = $false
+$mainForm.Controls.Add($ipTxtBox)
+
+$virustotalTxtBox = New-Object System.Windows.Forms.TextBox
+$virustotalTxtBox.Location = New-Object System.Drawing.Point(400, 260)
+$virustotalTxtBox.Size = New-Object System.Drawing.Size(300, 10)
+$virustotalTxtBox.Multiline = $true
+$virustotalTxtBox.Height = 185
+$virustotalTxtBox.Width = 360
+$virustotalTxtBox.ReadOnly = $true
+$mainForm.Controls.Add($virustotalTxtBox)
+
 Function Get-WhoIsInfo {
     [cmdletbinding()]
     [OutputType("WhoIsResult")]
@@ -41,16 +114,18 @@ Function Get-WhoIsInfo {
     #default is XML 
     $header = @{"Accept" = "application/xml"}
 
-    Write-Host "- WHOIS Record -"
+    $whoisTxtBox.Text = "- WHOIS Record -"
+
     $url = "$whois_url/ip/$ipaddress"
     $r = Invoke-Restmethod $url -Headers $header -ErrorAction stop
     $newUrl = "http://whois.arin.net/rest/org/"
     $handle = $r.net.orgRef.handle
-    $info_url = $newUrl + $handle 
-    $orgUrl = Invoke-Restmethod $info_url -Headers $header -ErrorAction stop
+    $infoUrl = $newUrl + $handle 
+    $orgUrl = Invoke-Restmethod $infoUrl -Headers $header -ErrorAction stop
 
     #standard return info is ugly, will use this instead
     if ($r.net) {
+        $whoisTxtBox.AppendText(`
         [pscustomobject]@{
             PSTypeName             = "WhoIsResult"
             IP                     = $ipaddress
@@ -64,6 +139,7 @@ Function Get-WhoIsInfo {
             NetBlocks              = $r.net.netBlocks.netBlock | foreach-object {"$($_.startaddress)/$($_.cidrLength)"}
             Updated                = $r.net.updateDate -as [datetime]
         }
+        )
      }
 }
 
@@ -113,9 +189,9 @@ Function Get-VirusTotalInfo {
         $url_total = $_.total
     }
     
-    Write-Host "- VirusTotal Analysis -"
-    Write-Host "Associated url's with detected positives: $url_pos"
-    Write-Host "Total number of submissions: $url_total`n" 
+    $virustotalTxtBox.text =  "- VirusTotal Analysis -`n"
+    $virustotalTxtBox.AppendText("Associated url's with detected positives: $url_pos`n")
+    $virustotalTxtBox.AppendText("Total number of submissions: $url_total`n`n")
 
     $file_pos = 0
     $file_total = 0
@@ -125,8 +201,8 @@ Function Get-VirusTotalInfo {
         $file_total = $_.total
     }
 
-    Write-Host "Associated files with detected positives: $file_pos"
-    Write-Host "Total number of submissions: $file_total`n"
+    $virustotalTxtBox.AppendText("Associated files with detected positives: $file_pos`n")
+    $virustotalTxtBox.AppendText("Total number of submissions: $file_total`n`n")
 }
 
 function Get-TorIPInfo {
@@ -210,28 +286,33 @@ Function Get-AbusedIPInfo {
         'Key' = $AB_API_KEY
     }
 
-    write-host "- AbuseIPDB Analysis -"
+    $abusedipTxtBox.Text = "- AbuseIPDB Analysis -`n"
 
-    
+    #no idea why this needs a string literal but whatever
     #$response = Invoke-RestMethod -Method Get -Uri $url -Body $query -Headers $header
     $test_response = Invoke-RestMethod -Method Get -Uri 'https://api.abuseipdb.com/api/v2/check' -Body $query -Headers $header
 
-    write-host "IP Address:        " $test_response.data.ipAddress
-    write-host "Domain Name:       " $test_response.data.domain
-    write-host "Total Reports:     " $test_response.data.totalReports
-    write-host "Abuse Score:       " $test_response.data.abuseconfidencescore "%" 
-    write-host "Last Report:       " $test_response.data.lastReportedAt 
+    $abusedipTxtBox.AppendText("`nIP Address:        " + $test_response.data.ipAddress)
+    $abusedipTxtBox.AppendText("`nDomain Name:       " + $test_response.data.domain)
+    $abusedipTxtBox.AppendText("`nTotal Reports:     " + $test_response.data.totalReports)
+    $abusedipTxtBox.AppendText("`nAbuse Score:       " + $test_response.data.abuseconfidencescore + "%")
+    $abusedipTxtBox.AppendText("`nLast Report:       " + $test_response.data.lastReportedAt)
 
     if($test_response.data.abuseconfidencescore -gt 5) {
-        write-host "*******************ALERT ALERT******************"
-        write-host "ALERT: $ip_address has ISSUES"
-        write-host "*******************ALERT ALERT******************`n"
+        $abusedipTxtBox.AppendText("`n`n*******************ALERT ALERT******************")
+        $abusedipTxtBox.AppendText("`nALERT: $ip_address has ISSUES")
+        $abusedipTxtBox.AppendText("`n*******************ALERT ALERT******************`n")
     }
 }
 
-$ip = Read-Host -Prompt "Enter an IP address to lookup"
+$okBtn.Add_Click({
+    Get-WhoIsInfo($ipTxtBox.Text)
+    Get-VirusTotalInfo($ipTxtBox.Text)
+    Get-TorIPInfo($ipTxtBox.Text)
+    Get-AbusedIPInfo($ipTxtBox.Text)
+})
 
-Get-WhoIsInfo($ip)
-Get-VirusTotalInfo($ip)
-Get-TorIPInfo($ip)
-Get-AbusedIPInfo($ip)
+
+# bring up mainForm
+$mainForm.Add_Shown({$mainForm.activate()})
+$mainForm.ShowDialog()  
