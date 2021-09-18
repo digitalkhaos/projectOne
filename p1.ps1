@@ -3,7 +3,7 @@
     by bulletproof
     2021
 
-    TODO: turn into a windowed GUI
+    TODO: clean up virustotal counts
     TODO:(possibly) X-force report
 #>
 
@@ -11,14 +11,16 @@ $VT_API_KEY = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13
 $AB_API_KEY = '7664fdaa5ee24939ea1f2fa2c39ca21f9d0530e58b030d8bf92d714ac89eba6104f0b1df95d495a9'
 
 Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.Application]::EnableVisualStyles()
 Add-Type -AssemblyName System.Drawing
 
 $mainForm = New-Object System.Windows.Forms.Form
-$mainForm.Size = New-Object System.Drawing.Size(800, 600)
+$mainForm.Size = New-Object System.Drawing.Size(550, 380)
 $mainForm.FormBorderStyle = 'Fixed3D'
 $mainform.MaximizeBox = $false
 $mainForm.Text = 'Bulletproof Security Analyst Tool'
 $mainForm.StartPosition = 'CenterScreen'
+$mainForm.AcceptButton = $okBtn
 $mainForm.Font = New-Object System.Drawing.Font("opensans", 10, [System.Drawing.FontStyle]::bold)
 
 $okBtn = New-Object System.Windows.Forms.Button
@@ -26,17 +28,17 @@ $okBtn.Location = New-Object System.Drawing.Point(275, 30)
 $okBtn.Size = New-Object System.Drawing.Size(75, 23)
 $okBtn.Height = 25
 $okBtn.Width = 80
-$okBtn.Text = 'ok'
-$okBtn.Font = New-Object System.Drawing.Font("opensans", 10, [System.Drawing.FontStyle]::bold)
+$okBtn.Text = 'Search'
+$okBtn.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawing.FontStyle]::bold)
 $mainForm.Controls.Add($okBtn)
 
 $exitBtn = New-Object System.Windows.Forms.Button
-$exitBtn.Location = New-Object System.Drawing.Point(550, 470)
-$exitBtn.Size = New-Object System.Drawing.Size(75, 23)
-$exitBtn.Height = 50
-$exitBtn.Width = 120
+$exitBtn.Location = New-Object System.Drawing.Point(425, 305)
+$exitBtn.Size = New-Object System.Drawing.Size(60, 13)
+$exitBtn.Height = 25
+$exitBtn.Width = 80
 $exitBtn.Text = 'Exit'
-$exitBtn.Font = New-Object System.Drawing.Font("opensans", 10, [System.Drawing.FontStyle]::bold)
+$exitBtn.Font = New-Object System.Drawing.Font("opensans", 10, [System.Drawing.FontStyle]::Regular)
 $exitBtn.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
 $mainForm.CancelButton = $exitBtn
 $mainForm.Controls.Add($exitBtn)
@@ -47,23 +49,23 @@ $lbl.Size = New-Object System.Drawing.Size(80, 30)
 $lbl.Text = 'IP Address:'
 $mainForm.Controls.Add($lbl)
 
-# tenantListBox with account / tenant pairs
 $whoisTxtBox = New-Object System.Windows.Forms.TextBox
-$whoisTxtBox.Location = New-Object System.Drawing.Point(10, 60)
+$whoisTxtBox.Location = New-Object System.Drawing.Point(22, 72)
 $whoisTxtBox.Size = New-Object System.Drawing.Size(300, 10)
-$whoisTxtBox.Height = 285
-$whoisTxtBox.Width = 360
+$whoisTxtBox.Height = 230
+$whoisTxtBox.Width = 210
 $whoisTxtBox.Multiline = $true
 $whoisTxtBox.ReadOnly = $true
-$whoisTxtBox.Font = New-Object System.Drawing.Font("opensans", 10, [System.Drawing.FontStyle]::Regular)
+$whoisTxtBox.Font = New-Object System.Drawing.Font("opensans", 9, [System.Drawing.FontStyle]::Regular)
 $mainForm.Controls.Add($whoisTxtBox)
 
 $abusedipTxtBox = New-Object System.Windows.Forms.TextBox
-$abusedipTxtBox.Location = New-Object System.Drawing.Point(400, 60)
+$abusedipTxtBox.Location = New-Object System.Drawing.Point(247, 73)
 $abusedipTxtBox.Size = New-Object System.Drawing.Size(420, 10)
 $abusedipTxtBox.Multiline = $true
-$abusedipTxtBox.Height = 185
-$abusedipTxtBox.Width = 360
+$abusedipTxtBox.Height =104
+$abusedipTxtBox.Width = 260
+$abusedipTxtBox.Font = New-Object System.Drawing.Font("opensans", 9, [System.Drawing.FontStyle]::Regular)
 $abusedipTxtBox.ReadOnly = $true
 $mainForm.Controls.Add($abusedipTxtBox)
 
@@ -77,21 +79,23 @@ $ipTxtBox.ReadOnly = $false
 $mainForm.Controls.Add($ipTxtBox)
 
 $virustotalTxtBox = New-Object System.Windows.Forms.TextBox
-$virustotalTxtBox.Location = New-Object System.Drawing.Point(400, 260)
+$virustotalTxtBox.Location = New-Object System.Drawing.Point(247, 187)
 $virustotalTxtBox.Size = New-Object System.Drawing.Size(300, 10)
 $virustotalTxtBox.Multiline = $true
-$virustotalTxtBox.Height = 185
-$virustotalTxtBox.Width = 360
+$virustotalTxtBox.Height = 104
+$virustotalTxtBox.Width = 260
 $virustotalTxtBox.ReadOnly = $true
+$virustotalTxtBox.Font = New-Object System.Drawing.Font("opensans", 9, [System.Drawing.FontStyle]::Regular)
 $mainForm.Controls.Add($virustotalTxtBox)
 
 $torTxtBox = New-Object System.Windows.Forms.TextBox
-$torTxtBox.Location = New-Object System.Drawing.Point(10, 350)
+$torTxtBox.Location = New-Object System.Drawing.Point(22, 310)
 $torTxtBox.Size = New-Object System.Drawing.Size(10, 200)
 $torTxtBox.Multiline = $true
-$torTxtBox.Height = 185
-$torTxtBox.Width = 360
+$torTxtBox.Height = 20
+$torTxtBox.Width = 250
 $torTxtBox.ReadOnly = $true
+$torTxtBox.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawing.FontStyle]::Regular)
 $mainForm.Controls.Add($torTxtBox)
 
 Function Get-WhoIsInfo {
@@ -248,9 +252,9 @@ function Get-TorIPInfo {
     #check ip_address against tor's list
     foreach($line in (Invoke-RestMethod $tor_url).split("`n")) {    
         if($line -eq $ip_address) {
-            $torTxtBox.AppendText("*******************ALERT ALERT******************`n")
+            #$torTxtBox.AppendText("*******************ALERT ALERT******************`n")
             $torTxtBox.AppendText("ALERT: $ip_address IS A TOR EXIT NODE`n") 
-            $torTxtBox.AppendText("*******************ALERT ALERT******************`n")
+            #$torTxtBox.AppendText("*******************ALERT ALERT******************`n")
             $flag = 1
         }
     }
@@ -303,24 +307,22 @@ Function Get-AbusedIPInfo {
     #$response = Invoke-RestMethod -Method Get -Uri $url -Body $query -Headers $header
     $test_response = Invoke-RestMethod -Method Get -Uri 'https://api.abuseipdb.com/api/v2/check' -Body $query -Headers $header
 
-    $abusedipTxtBox.AppendText("`nIP Address:        " + $test_response.data.ipAddress)
-    $abusedipTxtBox.AppendText("`nDomain Name:       " + $test_response.data.domain)
-    $abusedipTxtBox.AppendText("`nTotal Reports:     " + $test_response.data.totalReports)
-    $abusedipTxtBox.AppendText("`nAbuse Score:       " + $test_response.data.abuseconfidencescore + "%")
-    $abusedipTxtBox.AppendText("`nLast Report:       " + $test_response.data.lastReportedAt)
+    $abusedipTxtBox.AppendText("IP Address:        " + $test_response.data.ipAddress + "`n")
+    $abusedipTxtBox.AppendText("Domain Name:       " + $test_response.data.domain + "`n")
+    $abusedipTxtBox.AppendText("Total Reports:     " + $test_response.data.totalReports + "`n")
+    $abusedipTxtBox.AppendText("Abuse Score:       " + $test_response.data.abuseconfidencescore + "%`n")
+    $abusedipTxtBox.AppendText("Last Report:       " + $test_response.data.lastReportedAt + "`n")
 
     if($test_response.data.abuseconfidencescore -gt 5) {
-        $abusedipTxtBox.AppendText("`n`n*******************ALERT ALERT******************")
-        $abusedipTxtBox.AppendText("`nALERT: $ip_address has ISSUES")
-        $abusedipTxtBox.AppendText("`n*******************ALERT ALERT******************`n")
+        $abusedipTxtBox.AppendText("`nALERT: $ip_address has issues!`n")
     }
 }
 
 $okBtn.Add_Click({
-    Get-WhoIsInfo($ipTxtBox.Text)
-    Get-VirusTotalInfo($ipTxtBox.Text)
-    Get-TorIPInfo($ipTxtBox.Text)
-    Get-AbusedIPInfo($ipTxtBox.Text)
+    Get-WhoIsInfo($ipTxtBox.Text.Trim())
+    Get-VirusTotalInfo($ipTxtBox.Text.Trim())
+    Get-TorIPInfo($ipTxtBox.Text.Trim())
+    Get-AbusedIPInfo($ipTxtBox.Text.Trim())
 })
 
 # bring up mainForm
