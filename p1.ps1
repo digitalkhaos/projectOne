@@ -258,7 +258,7 @@ function Get-TorIPInfo {
             $flag = 1
         }
     }
-    # I have no idea why else{} won't work here but whatever, something to do with Jack sucking
+    # I have no idea why else{} won't work here but whatever
     if($flag -eq 0) {
         $torTxtBox.AppendText("`nNo TOR exit node detected`n")
         $flag = 0
