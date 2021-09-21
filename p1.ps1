@@ -18,7 +18,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $mainForm = New-Object System.Windows.Forms.Form
-$mainForm.Size = New-Object System.Drawing.Size(550, 380)
+$mainForm.Size = New-Object System.Drawing.Size(550, 400)
 $mainForm.FormBorderStyle = 'Fixed3D'
 $mainform.MaximizeBox = $false
 $mainForm.Text = 'Bulletproof Security Analyst Tool'
@@ -45,7 +45,7 @@ $clearBtn.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawing.F
 $mainForm.Controls.Add($clearBtn)
 
 $exitBtn = New-Object System.Windows.Forms.Button
-$exitBtn.Location = New-Object System.Drawing.Point(425, 305)
+$exitBtn.Location = New-Object System.Drawing.Point(447, 344)
 $exitBtn.Size = New-Object System.Drawing.Size(60, 13)
 $exitBtn.Height = 25
 $exitBtn.Width = 80
@@ -101,7 +101,7 @@ $virustotalTxtBox.Font = New-Object System.Drawing.Font("opensans", 9, [System.D
 $mainForm.Controls.Add($virustotalTxtBox)
 
 $torTxtBox = New-Object System.Windows.Forms.TextBox
-$torTxtBox.Location = New-Object System.Drawing.Point(22, 310)
+$torTxtBox.Location = New-Object System.Drawing.Point(274, 314)
 $torTxtBox.Size = New-Object System.Drawing.Size(10, 200)
 $torTxtBox.Multiline = $true
 $torTxtBox.Height = 20
@@ -109,6 +109,13 @@ $torTxtBox.Width = 250
 $torTxtBox.ReadOnly = $true
 $torTxtBox.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawing.FontStyle]::Regular)
 $mainForm.Controls.Add($torTxtBox)
+
+$xforceTxtBox = New-Object system.Windows.Forms.TextBox
+$xforceTxtBox.location = New-Object System.Drawing.Point(24,309)
+$xforceTxtBox.multiline = $true
+$xforceTxtBox.width = 207
+$xforceTxtBox.height = 65
+$xforceTxtBox.Fon = New-Object System.Drawing.Font("opensans", 9, [System.Drawing.FontStyle]::Regular)       
 
 Function Get-WhoIsInfo {
     [cmdletbinding()]
