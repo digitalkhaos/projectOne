@@ -5,8 +5,11 @@
 
     TODO: clean up virustotal counts
     TODO:(possibly) X-force report
-#>
 
+
+#>
+$XFORCE_API_KEY = "eb95de1b-cf11-4b2f-9b15-3db62bbcc7cd"
+$XFORCE_API_PASSWORD = "0a1ff815-65f2-4800-9c3c-c4177bc4d957"
 $VT_API_KEY = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13c'
 $AB_API_KEY = '7664fdaa5ee24939ea1f2fa2c39ca21f9d0530e58b030d8bf92d714ac89eba6104f0b1df95d495a9'
 
@@ -31,6 +34,15 @@ $okBtn.Width = 80
 $okBtn.Text = 'Search'
 $okBtn.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawing.FontStyle]::bold)
 $mainForm.Controls.Add($okBtn)
+
+$clearBtn = New-Object System.Windows.Forms.Button
+$clearBtn.Location = New-Object System.Drawing.Point(375, 30)
+$clearBtn.Size = New-Object System.Drawing.Size(75, 23)
+$clearBtn.Height = 25
+$clearBtn.Width = 80
+$clearBtn.Text = 'Clear'
+$clearBtn.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawing.FontStyle]::bold)
+$mainForm.Controls.Add($clearBtn)
 
 $exitBtn = New-Object System.Windows.Forms.Button
 $exitBtn.Location = New-Object System.Drawing.Point(425, 305)
@@ -247,13 +259,13 @@ function Get-TorIPInfo {
     $tor_url = 'https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1'
     $flag = 0
 
-    $torTxtBox.Text =  "- TOR Node Status -`n"
+    #$torTxtBox.Text =  "- TOR Node Status -`n"
 
     #check ip_address against tor's list
     foreach($line in (Invoke-RestMethod $tor_url).split("`n")) {    
         if($line -eq $ip_address) {
             #$torTxtBox.AppendText("*******************ALERT ALERT******************`n")
-            $torTxtBox.AppendText("ALERT: $ip_address IS A TOR EXIT NODE`n") 
+            $torTxtBox.Text("ALERT: $ip_address IS A TOR EXIT NODE`n") 
             #$torTxtBox.AppendText("*******************ALERT ALERT******************`n")
             $flag = 1
         }
@@ -288,7 +300,7 @@ Function Get-AbusedIPInfo {
         [string]$ip_address
     )
 
-    $url = 'https://api.abuseipdb.com/api/v2/check'
+    #$url = 'https://api.abuseipdb.com/api/v2/check'
     $days = 180
 
     $query = @{
@@ -318,11 +330,69 @@ Function Get-AbusedIPInfo {
     }
 }
 
+Function Get-XFORCEInfo {
+    param (
+        [Parameter(
+            Position = 0,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidatePattern("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")]
+        [ValidateScript( {
+            $test_ip = ($_.split(".")).where({[int]$_ -gt 254})
+                
+            if ($test_ip) {
+                 Throw "$_ is not valid"
+                 $false
+            }
+            else {
+                $true
+            }
+        })]
+        [string]$ip_address
+    )
+    
+    #Building Header for XForce
+    Write-Verbose -Message "Building authenication header."
+    $head = New-APIAuthHeader -Key $myKey.api -Password $myKey.pass
+    $API_URI_URL = "https://api.xforce.ibmcloud.com/url"
+    $API_URI_IP = "https://api.xforce.ibmcloud.com/ipr"
+
+     #IP Report
+     $ipR = $(Invoke-RestMethod -Uri "$API_URI_IP/$ip_address" -Method: Get -Headers $head)
+     Write-Debug -Message "Queried $API_URI_IP/$IP : $ipR"
+     Write-Verbose -Message "Parsing data..."
+     $report = [Ordered] @{
+         'IP' = $ipR.ip
+         'Geo_IP' = $ipR.geo.country
+         'IP_Score' = $ipR.score
+         'Score_Reason' = $ipR.reason
+         'Score_Description' = $ipR.reasonDescription
+         'Categories' = $ipR.cats
+     }#End of hash table
+
+     $report = New-Object -TypeName PSObject -ArgumentList $report
+     Write-Debug -Message "API data has been parsed: $report"
+
+}
+
+Function Clear-Info{
+    $virustotalTxtBox.Text = ""
+    $torTxtBox.Text = ""
+    $abusedipTxtBox.Text = ""
+    $whoisTxtBox.Text = ""
+    $ipTxtBox.Text = ""
+}
+
 $okBtn.Add_Click({
     Get-WhoIsInfo($ipTxtBox.Text.Trim())
     Get-VirusTotalInfo($ipTxtBox.Text.Trim())
     Get-TorIPInfo($ipTxtBox.Text.Trim())
     Get-AbusedIPInfo($ipTxtBox.Text.Trim())
+})
+
+$clearBtn.Add_Click({
+    Clear-Info
 })
 
 # bring up mainForm
