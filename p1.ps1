@@ -360,8 +360,7 @@ Function Get-XFORCEInfo {
 
      #IP Report
      $ipR = $(Invoke-RestMethod -Uri "$API_URI_IP/$ip_address" -Method: Get -Headers $head)
-     Write-Debug -Message "Queried $API_URI_IP/$IP : $ipR"
-     Write-Verbose -Message "Parsing data..."
+     
      $report = [Ordered] @{
          'IP' = $ipR.ip
          'Geo_IP' = $ipR.geo.country
@@ -369,10 +368,10 @@ Function Get-XFORCEInfo {
          'Score_Reason' = $ipR.reason
          'Score_Description' = $ipR.reasonDescription
          'Categories' = $ipR.cats
-     }#End of hash table
+     }
 
      $report = New-Object -TypeName PSObject -ArgumentList $report
-     Write-Debug -Message "API data has been parsed: $report"
+     
 
 }
 
@@ -389,6 +388,7 @@ $okBtn.Add_Click({
     Get-VirusTotalInfo($ipTxtBox.Text.Trim())
     Get-TorIPInfo($ipTxtBox.Text.Trim())
     Get-AbusedIPInfo($ipTxtBox.Text.Trim())
+    Get-XFORCEInfo($ipTxtBox.Text.Trim())
 })
 
 $clearBtn.Add_Click({
