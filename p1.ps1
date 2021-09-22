@@ -339,6 +339,18 @@ Function Get-AbusedIPInfo {
     }
 }
 
+function New-APIAuthHeader{
+    [cmdletbinding()]
+     Param (
+         [Parameter (Mandatory=$True, HelpMessage = "Username or API key if not given a username",Position = 1)][string]$Key,
+         [Parameter (Mandatory=$True, HelpMessage = "Password or API key if not given a password",Position = 2)][Alias('Pass')][string]$Password
+     )
+
+         $pair = "$Key" + ":" + "$Password"
+         $encoded = "Basic " + "$([System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($pair)))"
+         $header = @{Authorization = $encoded}
+ }
+
 Function Get-XFORCEInfo {
     param (
         [Parameter(
@@ -380,22 +392,11 @@ Function Get-XFORCEInfo {
      
      $report = New-Object -TypeName PSObject -ArgumentList $report
 
-     $xforceTxtBox.Text = "- XForce Analysis -`n"
-     $xforceTxtBox.AppendText("$API_URI_IP/$ip_address")
+     #$xforceTxtBox.Text = "- XForce Analysis -`n"
+     $xforceTxtBox.AppendText("`r`n$API_URI_IP/$ip_address")
+     $xforceTxtBox.AppendText("`r`n$XFORCE_API_KEY : $XFORCE_API_PASSWORD")
      #$xforceTxtBox.AppendText($report.ToString())
 }
-
-function New-APIAuthHeader{
-    [cmdletbinding()]
-     Param (
-         [Parameter (Mandatory=$True, HelpMessage = "Username or API key if not given a username",Position = 1)][string]$Key,
-         [Parameter (Mandatory=$True, HelpMessage = "Password or API key if not given a password",Position = 2)][Alias('Pass')][string]$Password
-     )
-
-         $pair = "$Key" + ":" + "$Password"
-         $encoded = "Basic " + "$([System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($pair)))"
-         $header = @{Authorization = $encoded}
- }
 
 Function Clear-Info{
     $virustotalTxtBox.Text = ""
