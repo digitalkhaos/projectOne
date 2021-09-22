@@ -8,8 +8,8 @@
 
 
 #>
-$XFORCE_API_KEY = '4f3bb142-bd30-4d99-97cb-29060807f022'
-$XFORCE_API_PASSWORD = '518bd860-f238-4672-87c6-ed01a47ddf18'
+$XFORCE_API_KEY = "4f3bb142-bd30-4d99-97cb-29060807f022"
+$XFORCE_API_PASSWORD = "518bd860-f238-4672-87c6-ed01a47ddf18"
 $VT_API_KEY = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13c'
 $AB_API_KEY = '7664fdaa5ee24939ea1f2fa2c39ca21f9d0530e58b030d8bf92d714ac89eba6104f0b1df95d495a9'
 
@@ -116,7 +116,7 @@ $xforceTxtBox.multiline = $true
 $xforceTxtBox.width = 207
 $xforceTxtBox.height = 65
 $xforceTxtBox.readonly = $true
-$xforceTxtBox.Font = New-Object System.Drawing.Font("opensans", 9, [System.Drawing.FontStyle]::Regular)   
+$xforceTxtBox.Font = New-Object System.Drawing.Font("opensans", 6, [System.Drawing.FontStyle]::Regular)   
 $mainForm.Controls.Add($xforceTxtBox)    
 
 Function Get-WhoIsInfo {
@@ -268,14 +268,10 @@ function Get-TorIPInfo {
     $tor_url = 'https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1'
     $flag = 0
 
-    #$torTxtBox.Text =  "- TOR Node Status -`n"
-
     #check ip_address against tor's list
     foreach($line in (Invoke-RestMethod $tor_url).split("`n")) {    
         if($line -eq $ip_address) {
-            #$torTxtBox.AppendText("*******************ALERT ALERT******************`n")
-            $torTxtBox.Text("ALERT: $ip_address IS A TOR EXIT NODE`n") 
-            #$torTxtBox.AppendText("*******************ALERT ALERT******************`n")
+            $torTxtBox.Text = "ALERT: $ip_address IS A TOR EXIT NODE`n"
             $flag = 1
         }
     }
@@ -309,15 +305,12 @@ Function Get-AbusedIPInfo {
         [string]$ip_address
     )
 
-    #$url = 'https://api.abuseipdb.com/api/v2/check'
     $days = 180
-
     $query = @{
         'ipAddress' = $ip_address
         'maxAgeInDays' = $days
     }
-
-    $header = @{
+    $head = @{
         'Accept' = 'application/json'
         'Key' = $AB_API_KEY
     }
@@ -325,8 +318,7 @@ Function Get-AbusedIPInfo {
     $abusedipTxtBox.Text = "`n- AbuseIPDB Analysis -`n"
 
     #no idea why this needs a string literal but whatever
-    #$response = Invoke-RestMethod -Method Get -Uri $url -Body $query -Headers $header
-    $test_response = Invoke-RestMethod -Method Get -Uri 'https://api.abuseipdb.com/api/v2/check' -Body $query -Headers $header
+    $test_response = Invoke-RestMethod -Method Get -Uri 'https://api.abuseipdb.com/api/v2/check' -Body $query -Headers $head
 
     $abusedipTxtBox.AppendText("`r`nIP Address:        " + $test_response.data.ipAddress)
     $abusedipTxtBox.AppendText("`r`nDomain Name:       " + $test_response.data.domain)
@@ -342,13 +334,14 @@ Function Get-AbusedIPInfo {
 function New-APIAuthHeader{
     [cmdletbinding()]
      Param (
-         [Parameter (Mandatory=$True, HelpMessage = "Username or API key if not given a username",Position = 1)][string]$Key,
-         [Parameter (Mandatory=$True, HelpMessage = "Password or API key if not given a password",Position = 2)][Alias('Pass')][string]$Password
+         [Parameter (Mandatory = $True, Position = 1)][string]$Key,
+         [Parameter (Mandatory = $True, Position = 2)][string]$Password
      )
 
          $pair = "$Key" + ":" + "$Password"
          $encoded = "Basic " + "$([System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($pair)))"
          $header = @{Authorization = $encoded}
+         Write-Output -InputObject $header
  }
 
 Function Get-XFORCEInfo {
@@ -373,29 +366,25 @@ Function Get-XFORCEInfo {
         [string]$ip_address
     )
 
+    #$head = $XFORCE_API_KEY + ":" + $XFORCE_API_PASSWORD
     $head = New-APIAuthHeader -Key $XFORCE_API_KEY -Password $XFORCE_API_PASSWORD
-    $API_URI_URL = "https://api.xforce.ibmcloud.com/url"
     $API_URI_IP = "https://api.xforce.ibmcloud.com/ipr"
 
      #IP Report
      $ipR = $(Invoke-RestMethod -Uri "$API_URI_IP/$ip_address" -Method: Get -Headers $head)
-     write-host $ipR.ip
-
+  
      $report = [Ordered] @{
-         'IP' = $ipR.ip
-         'Geo_IP' = $ipR.geo.country
          'IP_Score' = $ipR.score
          'Score_Reason' = $ipR.reason
          'Score_Description' = $ipR.reasonDescription
-         'Categories' = $ipR.cats
      }
      
      $report = New-Object -TypeName PSObject -ArgumentList $report
 
-     #$xforceTxtBox.Text = "- XForce Analysis -`n"
-     $xforceTxtBox.AppendText("`r`n$API_URI_IP/$ip_address")
-     $xforceTxtBox.AppendText("`r`n$XFORCE_API_KEY : $XFORCE_API_PASSWORD")
-     #$xforceTxtBox.AppendText($report.ToString())
+     $xforceTxtBox.Text = "- XForce Analysis -"
+     $xforceTxtBox.AppendText("`r`nIP Score: " +    $report.IP_Score.ToString())
+     $xforceTxtBox.AppendText("`r`nReason: " +      $report.Score_Reason)
+     $xforceTxtBox.AppendText("`r`nDescription: " + $report.Score_Description)
 }
 
 Function Clear-Info{
