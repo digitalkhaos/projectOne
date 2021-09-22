@@ -4,9 +4,7 @@
     2021
 
     TODO: clean up virustotal counts
-    TODO:(possibly) X-force report
-
-
+    TODO:make search button usable with 'enter' key
 #>
 $XFORCE_API_KEY = "4f3bb142-bd30-4d99-97cb-29060807f022"
 $XFORCE_API_PASSWORD = "518bd860-f238-4672-87c6-ed01a47ddf18"
@@ -24,16 +22,18 @@ $mainform.MaximizeBox = $false
 $mainForm.Text = 'Bulletproof Security Analyst Tool'
 $mainForm.StartPosition = 'CenterScreen'
 $mainForm.AcceptButton = $okBtn
+$mainForm.CancelButton = $cancelBtn
+$mainForm.KeyPreview = $true
 $mainForm.Font = New-Object System.Drawing.Font("opensans", 10, [System.Drawing.FontStyle]::bold)
 
-$okBtn = New-Object System.Windows.Forms.Button
-$okBtn.Location = New-Object System.Drawing.Point(275, 30)
-$okBtn.Size = New-Object System.Drawing.Size(75, 23)
-$okBtn.Height = 25
-$okBtn.Width = 80
-$okBtn.Text = 'Search'
-$okBtn.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawing.FontStyle]::bold)
-$mainForm.Controls.Add($okBtn)
+$searchBtn = New-Object System.Windows.Forms.Button
+$searchBtn.Location = New-Object System.Drawing.Point(275, 30)
+$searchBtn.Size = New-Object System.Drawing.Size(75, 23)
+$searchBtn.Height = 25
+$searchBtn.Width = 80
+$searchBtn.Text = 'Search'
+$searchBtn.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawing.FontStyle]::bold)
+$mainForm.Controls.Add($searchBtn)
 
 $clearBtn = New-Object System.Windows.Forms.Button
 $clearBtn.Location = New-Object System.Drawing.Point(375, 30)
@@ -323,7 +323,7 @@ Function Get-AbusedIPInfo {
     $abusedipTxtBox.AppendText("`r`nIP Address:        " + $test_response.data.ipAddress)
     $abusedipTxtBox.AppendText("`r`nDomain Name:       " + $test_response.data.domain)
     $abusedipTxtBox.AppendText("`r`nTotal Reports:     " + $test_response.data.totalReports)
-    $abusedipTxtBox.AppendText("`r`nAbuse Score:       " + $test_response.data.abuseconfidencescore)
+    $abusedipTxtBox.AppendText("`r`nAbuse Score:       " + $test_response.data.abuseconfidencescore + "%")
     $abusedipTxtBox.AppendText("`r`nLast Report:       " + $test_response.data.lastReportedAt)
 
     if($test_response.data.abuseconfidencescore -gt 5) {
@@ -396,7 +396,7 @@ Function Clear-Info{
     $xforceTxtBox.Text = ""
 }
 
-$okBtn.Add_Click({
+$searchBtn.Add_Click({
     Get-WhoIsInfo($ipTxtBox.Text.Trim())
     Get-VirusTotalInfo($ipTxtBox.Text.Trim())
     Get-TorIPInfo($ipTxtBox.Text.Trim())
