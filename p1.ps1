@@ -8,8 +8,8 @@
 
 
 #>
-$XFORCE_API_KEY = "eb95de1b-cf11-4b2f-9b15-3db62bbcc7cd"
-$XFORCE_API_PASSWORD = "0a1ff815-65f2-4800-9c3c-c4177bc4d957"
+$XFORCE_API_KEY = 'eb95de1b-cf11-4b2f-9b15-3db62bbcc7cd'
+$XFORCE_API_PASSWORD = '0a1ff815-65f2-4800-9c3c-c4177bc4d957'
 $VT_API_KEY = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13c'
 $AB_API_KEY = '7664fdaa5ee24939ea1f2fa2c39ca21f9d0530e58b030d8bf92d714ac89eba6104f0b1df95d495a9'
 
@@ -18,7 +18,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $mainForm = New-Object System.Windows.Forms.Form
-$mainForm.Size = New-Object System.Drawing.Size(550, 400)
+$mainForm.Size = New-Object System.Drawing.Size(550, 430)
 $mainForm.FormBorderStyle = 'Fixed3D'
 $mainform.MaximizeBox = $false
 $mainForm.Text = 'Bulletproof Security Analyst Tool'
@@ -45,7 +45,7 @@ $clearBtn.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawing.F
 $mainForm.Controls.Add($clearBtn)
 
 $exitBtn = New-Object System.Windows.Forms.Button
-$exitBtn.Location = New-Object System.Drawing.Point(447, 344)
+$exitBtn.Location = New-Object System.Drawing.Point(427, 345)
 $exitBtn.Size = New-Object System.Drawing.Size(60, 13)
 $exitBtn.Height = 25
 $exitBtn.Width = 80
@@ -101,7 +101,7 @@ $virustotalTxtBox.Font = New-Object System.Drawing.Font("opensans", 9, [System.D
 $mainForm.Controls.Add($virustotalTxtBox)
 
 $torTxtBox = New-Object System.Windows.Forms.TextBox
-$torTxtBox.Location = New-Object System.Drawing.Point(274, 314)
+$torTxtBox.Location = New-Object System.Drawing.Point(247, 300)
 $torTxtBox.Size = New-Object System.Drawing.Size(10, 200)
 $torTxtBox.Multiline = $true
 $torTxtBox.Height = 20
@@ -115,7 +115,9 @@ $xforceTxtBox.location = New-Object System.Drawing.Point(24,309)
 $xforceTxtBox.multiline = $true
 $xforceTxtBox.width = 207
 $xforceTxtBox.height = 65
-$xforceTxtBox.Fon = New-Object System.Drawing.Font("opensans", 9, [System.Drawing.FontStyle]::Regular)       
+$xforceTxtBox.readonly = $true
+$xforceTxtBox.Font = New-Object System.Drawing.Font("opensans", 9, [System.Drawing.FontStyle]::Regular)   
+$mainForm.Controls.Add($xforceTxtBox)    
 
 Function Get-WhoIsInfo {
     [cmdletbinding()]
@@ -223,9 +225,9 @@ Function Get-VirusTotalInfo {
         $url_total = $_.total
     }
     
-    $virustotalTxtBox.text =  "- VirusTotal Analysis -`n"
-    $virustotalTxtBox.AppendText("Associated url's with detected positives: $url_pos`n")
-    $virustotalTxtBox.AppendText("Total number of submissions: $url_total`n`n")
+    $virustotalTxtBox.text =  "- VirusTotal Analysis -`r`n"
+    $virustotalTxtBox.AppendText("Associated url's with detected positives: $url_pos`r`n")
+    $virustotalTxtBox.AppendText("Total number of submissions: $url_total`r`n")
 
     $file_pos = 0
     $file_total = 0
@@ -235,8 +237,8 @@ Function Get-VirusTotalInfo {
         $file_total = $_.total
     }
 
-    $virustotalTxtBox.AppendText("Associated files with detected positives: $file_pos`n")
-    $virustotalTxtBox.AppendText("Total number of submissions: $file_total`n`n")
+    $virustotalTxtBox.AppendText("Associated files with detected positives: $file_pos`r`n")
+    $virustotalTxtBox.AppendText("Total number of submissions: $file_total`r`n")
 }
 
 function Get-TorIPInfo {
@@ -279,7 +281,7 @@ function Get-TorIPInfo {
     }
     # I have no idea why else{} won't work here but whatever
     if($flag -eq 0) {
-        $torTxtBox.AppendText("`nNo TOR exit node detected`n")
+        $torTxtBox.Text = "No TOR exit node detected"
         $flag = 0
     }
 }
@@ -320,17 +322,17 @@ Function Get-AbusedIPInfo {
         'Key' = $AB_API_KEY
     }
 
-    $abusedipTxtBox.Text = "- AbuseIPDB Analysis -`n"
+    $abusedipTxtBox.Text = "`n- AbuseIPDB Analysis -`n"
 
     #no idea why this needs a string literal but whatever
     #$response = Invoke-RestMethod -Method Get -Uri $url -Body $query -Headers $header
     $test_response = Invoke-RestMethod -Method Get -Uri 'https://api.abuseipdb.com/api/v2/check' -Body $query -Headers $header
 
-    $abusedipTxtBox.AppendText("IP Address:        " + $test_response.data.ipAddress + "`n")
-    $abusedipTxtBox.AppendText("Domain Name:       " + $test_response.data.domain + "`n")
-    $abusedipTxtBox.AppendText("Total Reports:     " + $test_response.data.totalReports + "`n")
-    $abusedipTxtBox.AppendText("Abuse Score:       " + $test_response.data.abuseconfidencescore + "%`n")
-    $abusedipTxtBox.AppendText("Last Report:       " + $test_response.data.lastReportedAt + "`n")
+    $abusedipTxtBox.AppendText("`r`nIP Address:        " + $test_response.data.ipAddress)
+    $abusedipTxtBox.AppendText("`r`nDomain Name:       " + $test_response.data.domain)
+    $abusedipTxtBox.AppendText("`r`nTotal Reports:     " + $test_response.data.totalReports)
+    $abusedipTxtBox.AppendText("`r`nAbuse Score:       " + $test_response.data.abuseconfidencescore)
+    $abusedipTxtBox.AppendText("`r`nLast Report:       " + $test_response.data.lastReportedAt)
 
     if($test_response.data.abuseconfidencescore -gt 5) {
         $abusedipTxtBox.AppendText("`nALERT: $ip_address has issues!`n")
@@ -358,16 +360,15 @@ Function Get-XFORCEInfo {
         })]
         [string]$ip_address
     )
-    
-    #Building Header for XForce
-    Write-Verbose -Message "Building authenication header."
-    $head = New-APIAuthHeader -Key $myKey.api -Password $myKey.pass
+
+    $head = New-APIAuthHeader -Key $XFORCE_API_KEY -Password $XFORCE_API_PASSWORD
     $API_URI_URL = "https://api.xforce.ibmcloud.com/url"
     $API_URI_IP = "https://api.xforce.ibmcloud.com/ipr"
 
      #IP Report
      $ipR = $(Invoke-RestMethod -Uri "$API_URI_IP/$ip_address" -Method: Get -Headers $head)
-     
+     write-host $ipR.ip
+
      $report = [Ordered] @{
          'IP' = $ipR.ip
          'Geo_IP' = $ipR.geo.country
@@ -376,11 +377,25 @@ Function Get-XFORCEInfo {
          'Score_Description' = $ipR.reasonDescription
          'Categories' = $ipR.cats
      }
-
-     $report = New-Object -TypeName PSObject -ArgumentList $report
      
+     $report = New-Object -TypeName PSObject -ArgumentList $report
 
+     $xforceTxtBox.Text = "- XForce Analysis -`n"
+     $xforceTxtBox.AppendText("$API_URI_IP/$ip_address")
+     #$xforceTxtBox.AppendText($report.ToString())
 }
+
+function New-APIAuthHeader{
+    [cmdletbinding()]
+     Param (
+         [Parameter (Mandatory=$True, HelpMessage = "Username or API key if not given a username",Position = 1)][string]$Key,
+         [Parameter (Mandatory=$True, HelpMessage = "Password or API key if not given a password",Position = 2)][Alias('Pass')][string]$Password
+     )
+
+         $pair = "$Key" + ":" + "$Password"
+         $encoded = "Basic " + "$([System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($pair)))"
+         $header = @{Authorization = $encoded}
+ }
 
 Function Clear-Info{
     $virustotalTxtBox.Text = ""
@@ -388,6 +403,7 @@ Function Clear-Info{
     $abusedipTxtBox.Text = ""
     $whoisTxtBox.Text = ""
     $ipTxtBox.Text = ""
+    $xforceTxtBox.Text = ""
 }
 
 $okBtn.Add_Click({
