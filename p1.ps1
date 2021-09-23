@@ -16,7 +16,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $mainForm = New-Object System.Windows.Forms.Form
-$mainForm.Size = New-Object System.Drawing.Size(550, 430)
+$mainForm.Size = New-Object System.Drawing.Size(550, 450)
 $mainForm.FormBorderStyle = 'Fixed3D'
 $mainform.MaximizeBox = $false
 $mainForm.Text = 'Bulletproof Security Analyst Tool'
@@ -111,12 +111,12 @@ $torTxtBox.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawing.
 $mainForm.Controls.Add($torTxtBox)
 
 $xforceTxtBox = New-Object system.Windows.Forms.TextBox
-$xforceTxtBox.location = New-Object System.Drawing.Point(24,309)
+$xforceTxtBox.location = New-Object System.Drawing.Point(24,310)
 $xforceTxtBox.multiline = $true
 $xforceTxtBox.width = 207
-$xforceTxtBox.height = 65
+$xforceTxtBox.height = 85
 $xforceTxtBox.readonly = $true
-$xforceTxtBox.Font = New-Object System.Drawing.Font("opensans", 6, [System.Drawing.FontStyle]::Regular)   
+$xforceTxtBox.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawing.FontStyle]::Regular)   
 $mainForm.Controls.Add($xforceTxtBox)    
 
 Function Get-WhoIsInfo {
@@ -315,7 +315,7 @@ Function Get-AbusedIPInfo {
         'Key' = $AB_API_KEY
     }
 
-    $abusedipTxtBox.Text = "`n- AbuseIPDB Analysis -`n"
+    $abusedipTxtBox.Text = "`n- AbuseIP Analysis -`n"
 
     #no idea why this needs a string literal but whatever
     $test_response = Invoke-RestMethod -Method Get -Uri 'https://api.abuseipdb.com/api/v2/check' -Body $query -Headers $head
@@ -327,7 +327,7 @@ Function Get-AbusedIPInfo {
     $abusedipTxtBox.AppendText("`r`nLast Report:       " + $test_response.data.lastReportedAt)
 
     if($test_response.data.abuseconfidencescore -gt 5) {
-        $abusedipTxtBox.AppendText("`nALERT: $ip_address has issues!`n")
+        $abusedipTxtBox.AppendText("`r`nALERT: $ip_address has issues!`n")
     }
 }
 
@@ -366,7 +366,6 @@ Function Get-XFORCEInfo {
         [string]$ip_address
     )
 
-    #$head = $XFORCE_API_KEY + ":" + $XFORCE_API_PASSWORD
     $head = New-APIAuthHeader -Key $XFORCE_API_KEY -Password $XFORCE_API_PASSWORD
     $API_URI_IP = "https://api.xforce.ibmcloud.com/ipr"
 
