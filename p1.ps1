@@ -1,7 +1,6 @@
 <#
     project one (p1.ps1) - SOC Analyst IP info tool
-    by bulletproof
-    2021
+    2021 by bulletproof
 
     TODO: clean up virustotal counts
     TODO:make search button usable with 'enter' key
