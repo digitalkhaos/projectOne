@@ -6,8 +6,8 @@
     TODO: clean up virustotal counts
     TODO:make search button usable with 'enter' key
 #>
-$XFORCE_API_KEY = "4f3bb142-bd30-4d99-97cb-29060807f022"
-$XFORCE_API_PASSWORD = "518bd860-f238-4672-87c6-ed01a47ddf18"
+$XFORCE_API_KEY = '4f3bb142-bd30-4d99-97cb-29060807f022'
+$XFORCE_API_PASSWORD = '518bd860-f238-4672-87c6-ed01a47ddf18'
 $VT_API_KEY = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13c'
 $AB_API_KEY = '7664fdaa5ee24939ea1f2fa2c39ca21f9d0530e58b030d8bf92d714ac89eba6104f0b1df95d495a9'
 
@@ -45,7 +45,7 @@ $clearBtn.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawing.F
 $mainForm.Controls.Add($clearBtn)
 
 $exitBtn = New-Object System.Windows.Forms.Button
-$exitBtn.Location = New-Object System.Drawing.Point(427, 345)
+$exitBtn.Location = New-Object System.Drawing.Point(427, 375)
 $exitBtn.Size = New-Object System.Drawing.Size(60, 13)
 $exitBtn.Height = 25
 $exitBtn.Width = 80
@@ -104,8 +104,8 @@ $torTxtBox = New-Object System.Windows.Forms.TextBox
 $torTxtBox.Location = New-Object System.Drawing.Point(247, 300)
 $torTxtBox.Size = New-Object System.Drawing.Size(10, 200)
 $torTxtBox.Multiline = $true
-$torTxtBox.Height = 20
-$torTxtBox.Width = 250
+$torTxtBox.Height = 50
+$torTxtBox.Width = 260
 $torTxtBox.ReadOnly = $true
 $torTxtBox.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawing.FontStyle]::Regular)
 $mainForm.Controls.Add($torTxtBox)
@@ -125,9 +125,7 @@ Function Get-WhoIsInfo {
     Param (
         [parameter(
             Position = 0,
-            Mandatory,
-            ValueFromPipeline,
-            ValueFromPipelineByPropertyName)]
+            Mandatory)]
         [ValidateNotNullOrEmpty()]
 
         #friggin regex
@@ -142,24 +140,20 @@ Function Get-WhoIsInfo {
                     $true
                 }
         })]
-        [string]$IPAddress
+        [string]$ip_address
     )
 
     $whois_url = 'http://whois.arin.net/rest'
-
-    #default is XML 
     $header = @{"Accept" = "application/xml"}
-
-    $whoisTxtBox.Text = "- WHOIS Record -`n"
-
-    $url = "$whois_url/ip/$ipaddress"
+    $url = "$whois_url/ip/$ip_address"
     $r = Invoke-Restmethod $url -Headers $header -ErrorAction stop
     $newUrl = "http://whois.arin.net/rest/org/"
     $handle = $r.net.orgRef.handle
     $infoUrl = $newUrl + $handle 
     $orgUrl = Invoke-Restmethod $infoUrl -Headers $header -ErrorAction stop
 
-    #standard return info is ugly, will use this instead
+    $whoisTxtBox.Text = "- WHOIS Record -`n"
+
     if ($r.net) {
         $whoisTxtBox.AppendText(`
         [pscustomobject]@{
@@ -183,8 +177,7 @@ Function Get-VirusTotalInfo {
     param (
         [Parameter(
             Position = 0,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true)]
+            Mandatory)]
         [ValidateNotNullOrEmpty()]
 
         #friggin regex
@@ -206,13 +199,13 @@ Function Get-VirusTotalInfo {
     $url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
     $Body = @{'ip' = $ip_address; 'apikey' = $VT_API_KEY}
 
-    # parameters for REST Method
+    # parameters for REST
     $Params =  @{}
     $Params.add('Body', $Body)
     $Params.add('Method', 'Get')
     $Params.add('Uri', $url)
 
-    #get the report
+    #get report
     $IPReport = Invoke-RestMethod @Params 
 
     #positive and total counts need to be looked at more
@@ -245,8 +238,7 @@ function Get-TorIPInfo {
     param (
         [Parameter(
             Position = 0,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true)]
+            Mandatory)]
         [ValidateNotNullOrEmpty()]
 
         #friggin regex
@@ -286,8 +278,7 @@ Function Get-AbusedIPInfo {
     param (
         [Parameter(
             Position = 0,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true)]
+            Mandatory)]
         [ValidateNotNullOrEmpty()]
 
         [ValidatePattern("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")]
@@ -315,7 +306,7 @@ Function Get-AbusedIPInfo {
         'Key' = $AB_API_KEY
     }
 
-    $abusedipTxtBox.Text = "`n- AbuseIP Analysis -`n"
+    $abusedipTxtBox.Text = "`r`n- AbuseIP Analysis -"
 
     #no idea why this needs a string literal but whatever
     $test_response = Invoke-RestMethod -Method Get -Uri 'https://api.abuseipdb.com/api/v2/check' -Body $query -Headers $head
@@ -331,7 +322,7 @@ Function Get-AbusedIPInfo {
     }
 }
 
-function New-APIAuthHeader{
+function Get-Header{
     [cmdletbinding()]
      Param (
          [Parameter (Mandatory = $True, Position = 1)][string]$Key,
@@ -348,8 +339,7 @@ Function Get-XFORCEInfo {
     param (
         [Parameter(
             Position = 0,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true)]
+            Mandatory)]
         [ValidateNotNullOrEmpty()]
         [ValidatePattern("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")]
         [ValidateScript( {
@@ -366,16 +356,14 @@ Function Get-XFORCEInfo {
         [string]$ip_address
     )
 
-    $head = New-APIAuthHeader -Key $XFORCE_API_KEY -Password $XFORCE_API_PASSWORD
+    $head = Get-Header -Key $XFORCE_API_KEY -Password $XFORCE_API_PASSWORD
     $API_URI_IP = "https://api.xforce.ibmcloud.com/ipr"
-
-     #IP Report
-     $ipR = $(Invoke-RestMethod -Uri "$API_URI_IP/$ip_address" -Method: Get -Headers $head)
+     $ipReport = $(Invoke-RestMethod -Uri "$API_URI_IP/$ip_address" -Method: Get -Headers $head)
   
      $report = [Ordered] @{
-         'IP_Score' = $ipR.score
-         'Score_Reason' = $ipR.reason
-         'Score_Description' = $ipR.reasonDescription
+         'IP_Score' = $ipReport.score
+         'Score_Reason' = $ipReport.reason
+         'Score_Description' = $ipReport.reasonDescription
      }
      
      $report = New-Object -TypeName PSObject -ArgumentList $report
@@ -406,6 +394,13 @@ $searchBtn.Add_Click({
 $clearBtn.Add_Click({
     Clear-Info
 })
+
+$ipTextBox_KeyDown=[System.Windows.Forms.KeyEventHandler]{
+    #Event Argument: $_ = [System.Windows.Forms.KeyEventArgs]
+        if ($_.KeyCode -eq 'Enter'){
+            $searchBtn.PerformClick()
+        }
+    }
 
 # bring up mainForm
 $mainForm.Add_Shown({$mainForm.activate()})
