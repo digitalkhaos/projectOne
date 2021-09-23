@@ -88,6 +88,13 @@ $ipTxtBox.Height = 185
 $ipTxtBox.Width = 165
 $ipTxtBox.ReadOnly = $false
 $mainForm.Controls.Add($ipTxtBox)
+$ipTxtBox.Select()
+
+$ipTxtBox.Add_Keydown({
+    If ($_.KeyCode -eq 'Return'){
+        $searchBtn.PerformClick()
+    }   
+  })
 
 $virustotalTxtBox = New-Object System.Windows.Forms.TextBox
 $virustotalTxtBox.Location = New-Object System.Drawing.Point(247, 187)
@@ -151,7 +158,7 @@ Function Get-WhoIsInfo {
     $infoUrl = $newUrl + $handle 
     $orgUrl = Invoke-Restmethod $infoUrl -Headers $header -ErrorAction stop
 
-    $whoisTxtBox.Text = "- WHOIS Record -`n"
+    $whoisTxtBox.Text = "- WHOIS Record -`r`n"
 
     if ($r.net) {
         $whoisTxtBox.AppendText(`
@@ -393,13 +400,6 @@ $searchBtn.Add_Click({
 $clearBtn.Add_Click({
     Clear-Info
 })
-
-$ipTextBox_KeyDown=[System.Windows.Forms.KeyEventHandler]{
-    #Event Argument: $_ = [System.Windows.Forms.KeyEventArgs]
-        if ($_.KeyCode -eq 'Enter'){
-            $searchBtn.PerformClick()
-        }
-    }
 
 # bring up mainForm
 $mainForm.Add_Shown({$mainForm.activate()})
