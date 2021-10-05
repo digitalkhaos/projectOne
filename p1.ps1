@@ -4,6 +4,7 @@
 
     TODO: clean up virustotal counts
     TODO: change default icon
+    TODO: button w/ func that creates proper shortcut
 
     Shortcut Target: "C:\Program Files\PowerShell\7\pwsh.exe" -WindowStyle Hidden -ExecutionPolicy Bypass -File "<Path-To-p1.ps1>"
 #>
@@ -25,6 +26,7 @@ $mainForm.StartPosition = 'CenterScreen'
 $mainForm.AcceptButton = $okBtn
 $mainForm.CancelButton = $cancelBtn
 $mainForm.KeyPreview = $true
+$mainForm.Icon = "C:\Users\bsi534\OneDrive - Bulletproof\Pictures\fav.png"
 $mainForm.Font = New-Object System.Drawing.Font("opensans", 10, [System.Drawing.FontStyle]::bold)
 
 $searchBtn = New-Object System.Windows.Forms.Button
