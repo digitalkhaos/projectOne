@@ -1,2 +1,3 @@
 # projectOne
-cyber analyst all in one tool
+cyber analyst IP all in one tool
+{whois;virustotal;xforce;abuseipdb;TOR}
