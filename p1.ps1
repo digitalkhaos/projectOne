@@ -3,7 +3,9 @@
     2021 by bulletproof
 
     TODO: clean up virustotal counts
-    TODO:make search button usable with 'enter' key
+    TODO: change default icon
+
+    Shortcut Target: "C:\Program Files\PowerShell\7\pwsh.exe" -WindowStyle Hidden -ExecutionPolicy Bypass -File "<Path-To-p1.ps1>"
 #>
 $XFORCE_API_KEY = '4f3bb142-bd30-4d99-97cb-29060807f022'
 $XFORCE_API_PASSWORD = '518bd860-f238-4672-87c6-ed01a47ddf18'
