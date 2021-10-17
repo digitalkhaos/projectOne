@@ -6,12 +6,11 @@
     TODO: change default icon
     TODO: button w/ func that creates proper shortcut
 
-    Shortcut Target: "C:\Program Files\PowerShell\7\pwsh.exe" -WindowStyle Hidden -ExecutionPolicy Bypass -File "<Path-To-p1.ps1>"
 #>
-$XFORCE_API_KEY = '4f3bb142-bd30-4d99-97cb-29060807f022'
-$XFORCE_API_PASSWORD = '518bd860-f238-4672-87c6-ed01a47ddf18'
-$VT_API_KEY = 'e3cf255cf4c5cf3d5438189b28c91fe91796ed569f6e4a39bed3834e93fba13c'
-$AB_API_KEY = '7664fdaa5ee24939ea1f2fa2c39ca21f9d0530e58b030d8bf92d714ac89eba6104f0b1df95d495a9'
+$XFORCE_API_KEY = ''
+$XFORCE_API_PASSWORD = ''
+$VT_API_KEY = ''
+$AB_API_KEY = ''
 
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
