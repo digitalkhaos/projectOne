@@ -3,10 +3,8 @@
     2021 by bulletproof
 
     TODO: clean up virustotal counts
-    TODO: change default icon
-    TODO: button w/ func that creates proper shortcut
-
 #>
+
 $XFORCE_API_KEY = ''
 $XFORCE_API_PASSWORD = ''
 $VT_API_KEY = ''
@@ -129,28 +127,7 @@ $xforceTxtBox.Font = New-Object System.Drawing.Font("opensans", 8, [System.Drawi
 $mainForm.Controls.Add($xforceTxtBox)    
 
 Function Get-WhoIsInfo {
-    [cmdletbinding()]
-    [OutputType("WhoIsResult")]
-    Param (
-        [parameter(
-            Position = 0,
-            Mandatory)]
-        [ValidateNotNullOrEmpty()]
-
-        #friggin regex
-        [ValidatePattern("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")]
-        [ValidateScript({
-                $test_ip = ($_.split(".")).where({[int]$_ -gt 254})
-                if ($test_ip) {
-                    Throw "$_ is not valid"
-                    $false
-                }
-                else {
-                    $true
-                }
-        })]
-        [string]$ip_address
-    )
+    Param ([string]$ip_address)
 
     $whois_url = 'http://whois.arin.net/rest'
     $header = @{"Accept" = "application/xml"}
@@ -188,20 +165,6 @@ Function Get-VirusTotalInfo {
             Position = 0,
             Mandatory)]
         [ValidateNotNullOrEmpty()]
-
-        #friggin regex
-        [ValidatePattern("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")]
-        [ValidateScript( {
-            $test_ip = ($_.split(".")).where({[int]$_ -gt 254})
-                
-            if ($test_ip) {
-                 Throw "$_ is not valid"
-                 $false
-            }
-            else {
-                $true
-            }
-        })]
         [string]$ip_address
     )
     
@@ -217,7 +180,7 @@ Function Get-VirusTotalInfo {
     #get report
     $IPReport = Invoke-RestMethod @Params 
 
-    #positive and total counts need to be looked at more
+    #zero counts need to be looked at more
 
     $url_pos = 0
     $url_total = 0
@@ -244,27 +207,7 @@ Function Get-VirusTotalInfo {
 }
 
 function Get-TorIPInfo {
-    param (
-        [Parameter(
-            Position = 0,
-            Mandatory)]
-        [ValidateNotNullOrEmpty()]
-
-        #friggin regex
-        [ValidatePattern("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")]
-        [ValidateScript( {
-            $test_ip = ($_.split(".")).where({[int]$_ -gt 254})
-                
-            if ($test_ip) {
-                 Throw "$_ is not valid"
-                 $false
-            }
-            else {
-                $true
-            }
-        })]
-        [string]$ip_address
-    )
+    param ([string]$ip_address)
 
     $tor_url = 'https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1'
     $flag = 0
@@ -276,7 +219,7 @@ function Get-TorIPInfo {
             $flag = 1
         }
     }
-    # I have no idea why else{} won't work here but whatever
+    # I have no idea why else{} won't work here but whatever, this does...
     if($flag -eq 0) {
         $torTxtBox.Text = "No TOR exit node detected"
         $flag = 0
@@ -284,26 +227,7 @@ function Get-TorIPInfo {
 }
 
 Function Get-AbusedIPInfo {
-    param (
-        [Parameter(
-            Position = 0,
-            Mandatory)]
-        [ValidateNotNullOrEmpty()]
-
-        [ValidatePattern("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")]
-        [ValidateScript( {
-            $test_ip = ($_.split(".")).where({[int]$_ -gt 254})
-                
-            if ($test_ip) {
-                 Throw "$_ is not valid"
-                 $false
-            }
-            else {
-                $true
-            }
-        })]
-        [string]$ip_address
-    )
+    param ([string]$ip_address)
 
     $days = 180
     $query = @{
@@ -315,7 +239,7 @@ Function Get-AbusedIPInfo {
         'Key' = $AB_API_KEY
     }
 
-    $abusedipTxtBox.Text = "`r`n- AbuseIP Analysis -"
+    $abusedipTxtBox.Text = "`r`n- AbuseIPDB Analysis -"
 
     #no idea why this needs a string literal but whatever
     $test_response = Invoke-RestMethod -Method Get -Uri 'https://api.abuseipdb.com/api/v2/check' -Body $query -Headers $head
@@ -332,11 +256,7 @@ Function Get-AbusedIPInfo {
 }
 
 function Get-Header{
-    [cmdletbinding()]
-     Param (
-         [Parameter (Mandatory = $True, Position = 1)][string]$Key,
-         [Parameter (Mandatory = $True, Position = 2)][string]$Password
-     )
+     Param ([string]$Key, [string]$Password)
 
          $pair = "$Key" + ":" + "$Password"
          $encoded = "Basic " + "$([System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($pair)))"
@@ -345,25 +265,7 @@ function Get-Header{
  }
 
 Function Get-XFORCEInfo {
-    param (
-        [Parameter(
-            Position = 0,
-            Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [ValidatePattern("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")]
-        [ValidateScript( {
-            $test_ip = ($_.split(".")).where({[int]$_ -gt 254})
-                
-            if ($test_ip) {
-                 Throw "$_ is not valid"
-                 $false
-            }
-            else {
-                $true
-            }
-        })]
-        [string]$ip_address
-    )
+    param ([string]$ip_address)
 
     $head = Get-Header -Key $XFORCE_API_KEY -Password $XFORCE_API_PASSWORD
     $API_URI_IP = "https://api.xforce.ibmcloud.com/ipr"
@@ -393,6 +295,22 @@ Function Clear-Info{
 }
 
 $searchBtn.Add_Click({
+    
+    #TODO: check for correct input format
+    <#
+    #friggin regex
+       IP_ADDRESS_PATTERN("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+       check for valid octects
+                $test_ip = ($_.split(".")).where({[int]$_ -gt 254})
+                if ($test_ip) {
+                    Throw "$_ is not valid"
+                    $false
+                }
+                else {
+                    $true
+                }
+    #>
+
     Get-WhoIsInfo($ipTxtBox.Text.Trim())
     Get-VirusTotalInfo($ipTxtBox.Text.Trim())
     Get-TorIPInfo($ipTxtBox.Text.Trim())
