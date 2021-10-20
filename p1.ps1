@@ -160,13 +160,7 @@ Function Get-WhoIsInfo {
 }
 
 Function Get-VirusTotalInfo {
-    param (
-        [Parameter(
-            Position = 0,
-            Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]$ip_address
-    )
+    param ([string]$ip_address)
     
     $url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
     $Body = @{'ip' = $ip_address; 'apikey' = $VT_API_KEY}
