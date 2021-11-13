@@ -12,5 +12,4 @@ cyber analyst all in one tool
 	- Also working on Auto-PIM, have PoC, determining if it's actually faster
 ![image](https://user-images.githubusercontent.com/1554321/138189397-fc3b170f-0231-4dd8-be46-7aec005aa4bd.png)
 
-INSTALL INSTRUCTIONS
 ![image](https://user-images.githubusercontent.com/1554321/138189411-81731928-1cca-4053-97f8-64e3a02b58f0.png)
