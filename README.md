@@ -13,10 +13,4 @@ cyber analyst all in one tool
 ![image](https://user-images.githubusercontent.com/1554321/138189397-fc3b170f-0231-4dd8-be46-7aec005aa4bd.png)
 
 INSTALL INSTRUCTIONS
-1 - Requires Powershell 7.x, you may only have 5.1 installed download from Releases · PowerShell/PowerShell (github.com)
-2 - put file where you want
-3 - create shortcut (desktop or taskbar where ever)
-4 - right-click -> properties
-5 - Shortcut Tab ->Target should read:
-"C:\Program Files\PowerShell\7\pwsh.exe" -WindowStyle Hidden -ExecutionPolicy Bypass "C:\Users\bsiXXX\Path-To-Script\p1.ps1"
 ![image](https://user-images.githubusercontent.com/1554321/138189411-81731928-1cca-4053-97f8-64e3a02b58f0.png)
